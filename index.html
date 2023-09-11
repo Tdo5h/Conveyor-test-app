@@ -68,11 +68,49 @@
         <button id="startConveyor2">Start Conveyor 2</button>
         <button id="recordLap1">Lap Conveyor 1</button>
         <button id="recordLap2">Lap Conveyor 2</button>
-        <input type="time" id="timeInput" class="input-small">
-        <button id="setTime">Set Time</button>
+        <input type="time" id="timeInput" class="input-small" value="05:15">
+        <button id="setTime">Set End Shift</button>
+        <!-- Add a settings button -->
+        <button id="settingsButton">Settings</button>
     </div>
     <div id="stats" class="content">
         <!-- Display statistics here -->
+    </div>
+
+    <!-- Settings window -->
+    <div id="settings-window" style="display: none;">
+        <div class="content">
+            <h2>Settings</h2>
+            <!-- Toggle switch for Number of Laps to Average -->
+            <div class="toggle-switch">
+                <label>Number of Laps to Average</label>
+                <label class="switch">
+                    <input type="checkbox" id="toggleLaps">
+                    <span class="slider"></span>
+                </label>
+                <input type="number" id="lapsInput" class="input-small" value="4" disabled>
+            </div>
+            <!-- Toggle switch for Time to Alarm -->
+            <div class="toggle-switch">
+                <label>Time to Alarm</label>
+                <label class="switch">
+                    <input type="checkbox" id="toggleAlarm">
+                    <span class="slider"></span>
+                </label>
+                <input type="time" id="alarmInput" class="input-small" value="06:00" disabled>
+            </div>
+            <!-- Toggle switch for another setting -->
+            <div class="toggle-switch">
+                <label>Another Setting</label>
+                <label class="switch">
+                    <input type="checkbox" id="toggleAnotherSetting">
+                    <span class="slider"></span>
+                </label>
+                <input type="text" id="anotherSettingInput" class="input-small" value="Default Value" disabled>
+            </div>
+            <!-- Close button -->
+            <button id="closeSettings">Close</button>
+        </div>
     </div>
 
     <script>
@@ -104,8 +142,9 @@
             if (lapTimes1.length > 0) {
                 const averageTime1 = calculateAverageTime(lapTimes1);
                 statsDiv.innerHTML += `<div class="green">Average Lap TimeAll: ${formatTime(averageTime1)}</div>`;
-                statsDiv.innerHTML += `<div class="black">Average Last 2 Laps:  ${formatTime(calculateAverageTimeX2(lapTimes1))} </div>`;
-                statsDiv.innerHTML += `<div class="green">Average Last 4 Laps:  ${formatTime(calculateAverageTimeX4(lapTimes1))} </div>`;
+                statsDiv.innerHTML += `<div class="black">Average Last 4 Laps:  ${formatTime(calculateAverageTimeX4(lapTimes1))} </div>`;
+                statsDiv.innerHTML += `<div class="green">Average Last 2 Laps:  ${formatTime(calculateAverageTimeX2(lapTimes1))} </div>`;
+                
             }
             statsDiv.innerHTML += '<div class="blue">Lap times:</div>';
             lapTimes1.slice().reverse().forEach((lapData, idx) => {
@@ -127,8 +166,9 @@
                     const workToBeDone1_X4 = calculateWorkToBeDone(averageTimeX4_1, timeDifferenceRemaining);
 
                     statsDiv.innerHTML += `<div class="green">Avg All - Load Conveyor = ${workToBeDone1_All.toFixed(1)}  (Lifts = ${(workToBeDone1_All * 10 / 16).toFixed(1)})</div>`;
-                    statsDiv.innerHTML += `<div class="black">Avg 2x - Load Conveyor = ${workToBeDone1_X2.toFixed(1)}  (Lifts = ${(workToBeDone1_X2 * 10 / 16).toFixed(1)})</div>`;
-                    statsDiv.innerHTML += `<div class="green">Avg 4x - Load Conveyor = ${workToBeDone1_X4.toFixed(1)}  (Lifts = ${(workToBeDone1_X4 * 10 / 16).toFixed(1)})</div>`;
+                    statsDiv.innerHTML += `<div class="black">Avg 4x - Load Conveyor = ${workToBeDone1_X4.toFixed(1)}  (Lifts = ${(workToBeDone1_X4 * 10 / 16).toFixed(1)})</div>`;
+                    statsDiv.innerHTML += `<div class="green">Avg 2x - Load Conveyor = ${workToBeDone1_X2.toFixed(1)}  (Lifts = ${(workToBeDone1_X2 * 10 / 16).toFixed(1)})</div>`;
+                    
                 }
             } else {
                 statsDiv.innerHTML += 'Conveyor 1 stopped';
@@ -138,8 +178,8 @@
             if (lapTimes2.length > 0) {
                 const averageTime2 = calculateAverageTime(lapTimes2);
                 statsDiv.innerHTML += `<div class="green">Average Lap TimeAll: ${formatTime(averageTime2)}</div>`;
-                statsDiv.innerHTML += `<div class="black">Average Last 2 Laps:  ${formatTime(calculateAverageTimeX2(lapTimes2))} </div>`;
-                statsDiv.innerHTML += `<div class="green">Average Last 4 Laps:  ${formatTime(calculateAverageTimeX4(lapTimes2))} </div>`;
+                statsDiv.innerHTML += `<div class="black">Average Last 4 Laps:  ${formatTime(calculateAverageTimeX4(lapTimes2))} </div>`;
+                statsDiv.innerHTML += `<div class="green">Average Last 2 Laps:  ${formatTime(calculateAverageTimeX2(lapTimes2))} </div>`;
             }
             statsDiv.innerHTML += '<div class="blue">Lap times:</div>';
             lapTimes2.slice().reverse().forEach((lapData, idx) => {
@@ -161,8 +201,8 @@
                     const workToBeDone2_X4 = calculateWorkToBeDone(averageTimeX4_2, timeDifferenceRemaining);
 
                     statsDiv.innerHTML += `<div class="green">Avg All - Load Conveyor = ${workToBeDone2_All.toFixed(1)}  (Lifts = ${(workToBeDone2_All * 10 / 16).toFixed(1)})</div>`;
-                    statsDiv.innerHTML += `<div class="black">Avg 2x - Load Conveyor = ${workToBeDone2_X2.toFixed(1)} (Lifts = ${(workToBeDone2_X2 * 10 / 16).toFixed(1)})</div>`;
-                    statsDiv.innerHTML += `<div class="green">Avg 4x - Load Conveyor = ${workToBeDone2_X4.toFixed(1)}  (Lifts = ${(workToBeDone2_X4 * 10 / 16).toFixed(1)})</div>`;
+                    statsDiv.innerHTML += `<div class="black">Avg 4x - Load Conveyor = ${workToBeDone2_X4.toFixed(1)}  (Lifts = ${(workToBeDone2_X4 * 10 / 16).toFixed(1)})</div>`;
+                    statsDiv.innerHTML += `<div class="green">Avg 2x - Load Conveyor = ${workToBeDone2_X2.toFixed(1)} (Lifts = ${(workToBeDone2_X2 * 10 / 16).toFixed(1)})</div>`;
                 }
             } else {
                 statsDiv.innerHTML += 'Conveyor 2 stopped';
@@ -282,6 +322,40 @@
 
         // Automatically click the "Set Time" button every 1 second
         setInterval(simulateSetTimeButtonClick, 1000);
+
+        // Settings toggles and logic
+        const toggleLaps = document.getElementById('toggleLaps');
+        const toggleAlarm = document.getElementById('toggleAlarm');
+        const toggleAnotherSetting = document.getElementById('toggleAnotherSetting');
+        const lapsInput = document.getElementById('lapsInput');
+        const alarmInput = document.getElementById('alarmInput');
+        const anotherSettingInput = document.getElementById('anotherSettingInput');
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsWindow = document.getElementById('settings-window');
+        const closeSettings = document.getElementById('closeSettings');
+
+        settingsButton.addEventListener('click', () => {
+            settingsWindow.style.display = 'block';
+        });
+
+        closeSettings.addEventListener('click', () => {
+            settingsWindow.style.display = 'none';
+        });
+
+        toggleLaps.addEventListener('change', () => {
+            lapsInput.disabled = !toggleLaps.checked;
+            displayStats();
+        });
+
+        toggleAlarm.addEventListener('change', () => {
+            alarmInput.disabled = !toggleAlarm.checked;
+            displayStats();
+        });
+
+        toggleAnotherSetting.addEventListener('change', () => {
+            anotherSettingInput.disabled = !toggleAnotherSetting.checked;
+            displayStats();
+        });
     </script>
 </body>
 </html>
