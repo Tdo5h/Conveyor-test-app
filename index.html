@@ -69,18 +69,18 @@
         <button id="recordLap1">Lap Conveyor 1</button>
         <button id="recordLap2">Lap Conveyor 2</button>
         <input type="time" id="timeInput" class="input-small" value="05:15">
-        <button id="setTime">Set End Shift AM-PM</button>
+        <button id="setTime">  Set End Shift AM-PM </button>
     </div>
     <div id="stats" class="content">
         <!-- Display statistics here -->
     </div>
-    <button id="fetchLaps">Fetch Laps</button>
 
-    <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js"></script>
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database-compat.js"></script>
 
     <script>
+        // Initialize Firebase with your configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAdX_RAPVeG-uekG-lG1nhSFzZkTMRgg0c",
             authDomain: "conveyor-laps.firebaseapp.com",
@@ -93,7 +93,7 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const database = firebase.database();
 
         let lapStart1 = 0;
         let lapStart2 = 0;
@@ -260,8 +260,9 @@
                 lapTimes1.push([lapTime, timeOfDay]);
                 lapStart1 = Date.now();
                 displayStats();
-                // Save lap time to Firebase
-                db.collection("lapTimes1").add({
+
+                // Send lap time data to Firebase
+                database.ref('conveyor-laps/conveyor1').push({
                     lapTime: lapTime,
                     timeOfDay: timeOfDay
                 });
@@ -275,8 +276,9 @@
                 lapTimes2.push([lapTime, timeOfDay]);
                 lapStart2 = Date.now();
                 displayStats();
-                // Save lap time to Firebase
-                db.collection("lapTimes2").add({
+
+                // Send lap time data to Firebase
+                database.ref('conveyor-laps/conveyor2').push({
                     lapTime: lapTime,
                     timeOfDay: timeOfDay
                 });
@@ -313,27 +315,6 @@
 
         // Automatically click the "Set Time" button every 1 second
         setInterval(simulateSetTimeButtonClick, 1000);
-
-        // Fetch lap times from Firebase
-        document.getElementById('fetchLaps').addEventListener('click', () => {
-            // Fetch lap times for Conveyor 1
-            db.collection("lapTimes1").get().then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    const lapTime = doc.data().lapTime;
-                    const timeOfDay = doc.data().timeOfDay;
-                    lapTimes1.push([lapTime, timeOfDay]);
-                });
-                // Fetch lap times for Conveyor 2
-                db.collection("lapTimes2").get().then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        const lapTime = doc.data().lapTime;
-                        const timeOfDay = doc.data().timeOfDay;
-                        lapTimes2.push([lapTime, timeOfDay]);
-                    });
-                    displayStats();
-                });
-            });
-        });
     </script>
 </body>
 </html>
