@@ -6,18 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon.png">
-
     <title>Conveyor Calculator</title>
-    
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-
     <!-- Shortcut Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="icon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="icon-16x16.png">
-
     <link rel="manifest" href="manifest.json">
-
     <style>
         body, html {
             height: 100%;
@@ -25,16 +20,13 @@
             padding: 0;
         }
         body {
-           background-color: black;
-        }
-        body {
+            background-color: black;
             background-image: url('background.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
             font-weight: bold;
         }
-
         .bold { font-weight: bold; }
         .input-small { width: 6rem; }
         .red { color: red; }
@@ -42,22 +34,24 @@
         .blue { color: blue; }
         .purple { color: purple; }
         .orange { color: orange; }
-
         .content {
             background-color: rgba(255, 255, 255, 0.7);
             padding: 20px;
             border-radius: 10px;
         }
-
         #recordLap1, #recordLap2 {
             width: auto;
             height: auto;
             font-size: 230%;
         }
-
         /* Increase the size of Conveyor headers by 50% */
         .conveyor-header {
             font-size: 180%;
+        }
+        /* Add a new CSS class for the countdown timer */
+        .countdown-timer {
+            color: red;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -70,17 +64,17 @@
         <button id="recordLap2">Lap Conveyor 2</button>
         <input type="time" id="timeInput" class="input-small" value="05:15">
         <button id="setTime">  Set End Shift AM-PM </button>
+        <button id="retrieveLaps">Retrieve Laps</button>
     </div>
     <div id="stats" class="content">
         <!-- Display statistics here -->
     </div>
+    <div id="countdown" class="countdown-timer"></div>
 
-    <!-- Firebase JavaScript SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database-compat.js"></script>
-
     <script>
-        // Initialize Firebase with your configuration
+        // Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAdX_RAPVeG-uekG-lG1nhSFzZkTMRgg0c",
             authDomain: "conveyor-laps.firebaseapp.com",
@@ -91,7 +85,7 @@
             appId: "1:708197721355:web:234d1d9223b125a657ee0e",
             measurementId: "G-X2REH4L1M5"
         };
-
+        
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -192,6 +186,9 @@
             if (timeDifferenceRemaining > 0) {
                 statsDiv.innerHTML += `<div class="red bold">Time to Shift Change: ${formatTime(timeDifferenceRemaining)}</div>`;
             }
+            
+            // Display the countdown timer
+            displayCountdown();
         }
 
         function startCountdown() {
@@ -262,7 +259,7 @@
                 displayStats();
 
                 // Send lap time data to Firebase
-                database.ref('conveyor-laps/conveyor1').push({
+                database.ref('laps/conveyor1').push({
                     lapTime: lapTime,
                     timeOfDay: timeOfDay
                 });
@@ -278,7 +275,7 @@
                 displayStats();
 
                 // Send lap time data to Firebase
-                database.ref('conveyor-laps/conveyor2').push({
+                database.ref('laps/conveyor2').push({
                     lapTime: lapTime,
                     timeOfDay: timeOfDay
                 });
@@ -287,26 +284,45 @@
 
         document.getElementById('setTime').addEventListener('click', () => {
             const timeInput = document.getElementById('timeInput').value;
-            const timeParts = timeInput.split(':');
-            if (timeParts.length === 2) {
-                const hours = parseInt(timeParts[0]);
-                const minutes = parseInt(timeParts[1]);
-                if (!isNaN(hours) && !isNaN(minutes)) {
-                    const now = new Date();
-                    targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-                    if (targetTime <= now) {
-                        targetTime.setDate(targetTime.getDate() + 1);
-                    }
-                    timeDifference = targetTime.getTime() - now.getTime();
-                    timeDifferenceRemaining = timeDifference / 1000;
-                    workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
-                    workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
-                    displayStats();
-                    startCountdown();
-                }
-            }
+            const [hours, minutes] = timeInput.split(':').map(Number);
+            const now = new Date();
+            const targetTimeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+            targetTime = targetTimeDate.getTime();
+
+            timeDifference = Math.floor((targetTime - now.getTime()) / 1000);
+            timeDifferenceRemaining = timeDifference;
+
+            displayStats();
+            startCountdown();
         });
 
+        document.getElementById('retrieveLaps').addEventListener('click', () => {
+            // Retrieve laps from Firebase here
+            const lapsRef1 = database.ref('laps/conveyor1');
+            const lapsRef2 = database.ref('laps/conveyor2');
+
+            lapsRef1.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    lapTimes1.length = 0; // Clear existing lap times
+                    Object.values(data).forEach((lapData) => {
+                        lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
+                    });
+                    displayStats();
+                }
+            });
+
+            lapsRef2.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    lapTimes2.length = 0; // Clear existing lap times
+                    Object.values(data).forEach((lapData) => {
+                        lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
+                    });
+                    displayStats();
+                }
+            });
+        });
         // Function to simulate a click on the "Set Time" button
         function simulateSetTimeButtonClick() {
             const setTimeButton = document.getElementById('setTime');
@@ -315,6 +331,16 @@
 
         // Automatically click the "Set Time" button every 1 second
         setInterval(simulateSetTimeButtonClick, 1000);
+        
+        // Function to display the countdown timer
+        function displayCountdown() {
+            const countdownDiv = document.getElementById('countdown');
+            countdownDiv.innerHTML = '';
+            
+            if (timeDifferenceRemaining > 0) {
+                countdownDiv.textContent = `Time to Shift Change: ${formatTime(timeDifferenceRemaining)}`;
+            }
+        }
     </script>
 </body>
 </html>
