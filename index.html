@@ -21,6 +21,8 @@
         }
         body {
             background-color: black;
+        }
+        body {
             background-image: url('background.jpg');
             background-size: cover;
             background-repeat: no-repeat;
@@ -48,11 +50,6 @@
         .conveyor-header {
             font-size: 180%;
         }
-        /* Add a new CSS class for the countdown timer */
-        .countdown-timer {
-            color: red;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -63,13 +60,14 @@
         <button id="recordLap1">Lap Conveyor 1</button>
         <button id="recordLap2">Lap Conveyor 2</button>
         <input type="time" id="timeInput" class="input-small" value="05:15">
-        <button id="setTime">  Set End Shift AM-PM </button>
-        <button id="retrieveLaps">Retrieve Laps</button>
+        <button id="setTime">Set End Shift</button>
+        <button id="pullLaps">Pull Laps</button> <!-- Added "Pull Laps" button -->
     </div>
     <div id="stats" class="content">
         <!-- Display statistics here -->
     </div>
-    <div id="countdown" class="countdown-timer"></div>
+    <div id="countdown" class="countdown-timer">Time to Shift Change: 00:00:00</div>
+    <div id="clock" class="countdown-timer"></div> <!-- Added for displaying the clock -->
 
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database-compat.js"></script>
@@ -85,7 +83,6 @@
             appId: "1:708197721355:web:234d1d9223b125a657ee0e",
             measurementId: "G-X2REH4L1M5"
         };
-        
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -119,7 +116,6 @@
                 statsDiv.innerHTML += `<div class="green">Average Lap TimeAll: ${formatTime(averageTime1)}</div>`;
                 statsDiv.innerHTML += `<div class="black">Average Last 4 Laps:  ${formatTime(calculateAverageTimeX4(lapTimes1))} </div>`;
                 statsDiv.innerHTML += `<div class="green">Average Last 2 Laps:  ${formatTime(calculateAverageTimeX2(lapTimes1))} </div>`;
-                
             }
             statsDiv.innerHTML += '<div class="blue">Lap times:</div>';
             lapTimes1.slice().reverse().forEach((lapData, idx) => {
@@ -143,7 +139,6 @@
                     statsDiv.innerHTML += `<div class="green">Avg All - Load Conveyor = ${workToBeDone1_All.toFixed(1)}  (Lifts = ${(workToBeDone1_All * 10 / 16).toFixed(1)})</div>`;
                     statsDiv.innerHTML += `<div class="black">Avg 4x - Load Conveyor = ${workToBeDone1_X4.toFixed(1)}  (Lifts = ${(workToBeDone1_X4 * 10 / 16).toFixed(1)})</div>`;
                     statsDiv.innerHTML += `<div class="green">Avg 2x - Load Conveyor = ${workToBeDone1_X2.toFixed(1)}  (Lifts = ${(workToBeDone1_X2 * 10 / 16).toFixed(1)})</div>`;
-                    
                 }
             } else {
                 statsDiv.innerHTML += 'Conveyor 1 stopped';
@@ -186,9 +181,6 @@
             if (timeDifferenceRemaining > 0) {
                 statsDiv.innerHTML += `<div class="red bold">Time to Shift Change: ${formatTime(timeDifferenceRemaining)}</div>`;
             }
-            
-            // Display the countdown timer
-            displayCountdown();
         }
 
         function startCountdown() {
@@ -284,45 +276,70 @@
 
         document.getElementById('setTime').addEventListener('click', () => {
             const timeInput = document.getElementById('timeInput').value;
-            const [hours, minutes] = timeInput.split(':').map(Number);
-            const now = new Date();
-            const targetTimeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-            targetTime = targetTimeDate.getTime();
+            const timeParts = timeInput.split(':');
+            if (timeParts.length === 2) {
+                const hours = parseInt(timeParts[0]);
+                const minutes = parseInt(timeParts[1]);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    const now = new Date();
+                    targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+                    if (targetTime <= now) {
+                        targetTime.setDate(targetTime.getDate() + 1);
+                    }
+                    timeDifference = targetTime.getTime() - now.getTime();
+                    timeDifferenceRemaining = timeDifference / 1000;
+                    workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
+                    workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
+                    displayStats();
+                    startCountdown();
+                }
+            }
+        });
 
-            timeDifference = Math.floor((targetTime - now.getTime()) / 1000);
-            timeDifferenceRemaining = timeDifference;
-
+        document.getElementById('pullLaps').addEventListener('click', () => {
+    // Retrieve the newest 4 laps from Firebase for Conveyor 1
+    const lapsRef1 = database.ref('laps/conveyor1').limitToLast(20);
+    lapsRef1.once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            lapTimes1.length = 0; // Clear the existing lap times
+            for (const key in data) {
+                const lapData = data[key];
+                lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
+            }
             displayStats();
-            startCountdown();
-        });
+        }
+    });
 
-        document.getElementById('retrieveLaps').addEventListener('click', () => {
-            // Retrieve laps from Firebase here
-            const lapsRef1 = database.ref('laps/conveyor1');
-            const lapsRef2 = database.ref('laps/conveyor2');
-
-            lapsRef1.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    lapTimes1.length = 0; // Clear existing lap times
-                    Object.values(data).forEach((lapData) => {
-                        lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
-                    });
-                    displayStats();
+    // Retrieve the newest 4 laps from Firebase for Conveyor 2
+    const lapsRef2 = database.ref('laps/conveyor2').limitToLast(20);
+    lapsRef2.once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            lapTimes2.length = 0; // Clear the existing lap times
+            for (const key in data) {
+                const lapData = data[key];
+                lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
+            }
+            displayStats();
                 }
             });
 
-            lapsRef2.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    lapTimes2.length = 0; // Clear existing lap times
-                    Object.values(data).forEach((lapData) => {
-                        lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
-                    });
-                    displayStats();
-                }
-            });
+            // Automatically start both conveyors
+            if (!running1) {
+                lapStart1 = Date.now();
+                running1 = true;
+                startCountdown();
+                displayStats();
+            }
+            if (!running2) {
+                lapStart2 = Date.now();
+                running2 = true;
+                startCountdown();
+                displayStats();
+            }
         });
+
         // Function to simulate a click on the "Set Time" button
         function simulateSetTimeButtonClick() {
             const setTimeButton = document.getElementById('setTime');
@@ -331,16 +348,6 @@
 
         // Automatically click the "Set Time" button every 1 second
         setInterval(simulateSetTimeButtonClick, 1000);
-        
-        // Function to display the countdown timer
-        function displayCountdown() {
-            const countdownDiv = document.getElementById('countdown');
-            countdownDiv.innerHTML = '';
-            
-            if (timeDifferenceRemaining > 0) {
-                countdownDiv.textContent = `Time to Shift Change: ${formatTime(timeDifferenceRemaining)}`;
-            }
-        }
     </script>
 </body>
 </html>
