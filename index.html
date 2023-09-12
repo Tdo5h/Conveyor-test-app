@@ -298,7 +298,7 @@
 
         document.getElementById('pullLaps').addEventListener('click', () => {
     // Retrieve the newest 4 laps from Firebase for Conveyor 1
-    const lapsRef1 = database.ref('laps/conveyor1').limitToLast(20);
+    const lapsRef1 = database.ref('laps/conveyor1').limitToLast(6);
     lapsRef1.once('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -312,7 +312,7 @@
     });
 
     // Retrieve the newest 4 laps from Firebase for Conveyor 2
-    const lapsRef2 = database.ref('laps/conveyor2').limitToLast(20);
+    const lapsRef2 = database.ref('laps/conveyor2').limitToLast(6);
     lapsRef2.once('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
