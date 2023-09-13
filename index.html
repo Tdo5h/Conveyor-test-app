@@ -242,6 +242,17 @@
             }
         });
 
+        function sendLapDataToFirebase(conveyor, lapTime, timeOfDay) {
+            // Check if the lap time is greater than 15 minutes (900,000 milliseconds)
+            if (lapTime > 900000) {
+                // Send lap time data to Firebase
+                database.ref(`laps/${conveyor}`).push({
+                    lapTime: lapTime,
+                    timeOfDay: timeOfDay
+                });
+            }
+        }
+
         document.getElementById('recordLap1').addEventListener('click', () => {
             if (running1) {
                 const lapTime = Date.now() - lapStart1;
@@ -251,10 +262,7 @@
                 displayStats();
 
                 // Send lap time data to Firebase
-                database.ref('laps/conveyor1').push({
-                    lapTime: lapTime,
-                    timeOfDay: timeOfDay
-                });
+                sendLapDataToFirebase('conveyor1', lapTime, timeOfDay);
             }
         });
 
@@ -267,10 +275,7 @@
                 displayStats();
 
                 // Send lap time data to Firebase
-                database.ref('laps/conveyor2').push({
-                    lapTime: lapTime,
-                    timeOfDay: timeOfDay
-                });
+                sendLapDataToFirebase('conveyor2', lapTime, timeOfDay);
             }
         });
 
@@ -297,44 +302,44 @@
         });
 
         document.getElementById('pullLaps').addEventListener('click', () => {
-    // Retrieve the newest 4 laps from Firebase for Conveyor 1
-    const lapsRef1 = database.ref('laps/conveyor1').limitToLast(6);
-    lapsRef1.once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            lapTimes1.length = 0; // Clear the existing lap times
-            for (const key in data) {
-                const lapData = data[key];
-                lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
-            }
-            displayStats();
-        }
-    });
+            // Retrieve the newest 4 laps from Firebase for Conveyor 1
+            const lapsRef1 = database.ref('laps/conveyor1').limitToLast(4);
+            lapsRef1.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    lapTimes1.length = 0; // Clear the existing lap times
+                    for (const key in data) {
+                        const lapData = data[key];
+                        lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
+                    }
+                    displayStats();
+                }
+            });
 
-    // Retrieve the newest 4 laps from Firebase for Conveyor 2
-    const lapsRef2 = database.ref('laps/conveyor2').limitToLast(6);
-    lapsRef2.once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            lapTimes2.length = 0; // Clear the existing lap times
-            for (const key in data) {
-                const lapData = data[key];
-                lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
-            }
-            displayStats();
+            // Retrieve the newest 4 laps from Firebase for Conveyor 2
+            const lapsRef2 = database.ref('laps/conveyor2').limitToLast(4);
+            lapsRef2.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    lapTimes2.length = 0; // Clear the existing lap times
+                    for (const key in data) {
+                        const lapData = data[key];
+                        lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
+                    }
+                    displayStats();
                 }
             });
 
             // Automatically start both conveyors
             if (!running1) {
                 lapStart1 = Date.now();
-                running1 = true;
+                running1 = false;
                 startCountdown();
                 displayStats();
             }
             if (!running2) {
                 lapStart2 = Date.now();
-                running2 = true;
+                running2 = false;
                 startCountdown();
                 displayStats();
             }
