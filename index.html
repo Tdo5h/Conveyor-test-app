@@ -247,7 +247,7 @@
 
         function sendLapDataToFirebase(conveyor, lapTime, timeOfDay) {
             // Check if the lap time is greater than 15 minutes (900,000 milliseconds)
-            if (lapTime > 900000) {
+            if (lapTime > 90) {
                 // Send lap time data to Firebase
                 database.ref(`laps/${conveyor}`).push({
                     lapTime: lapTime,
