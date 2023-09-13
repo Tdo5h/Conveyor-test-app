@@ -71,7 +71,6 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database-compat.js"></script>
-
     <script>
         // Initialize Firebase
         const firebaseConfig = {
@@ -83,24 +82,10 @@
             messagingSenderId: "708197721355",
             appId: "1:708197721355:web:234d1d9223b125a657ee0e",
             measurementId: "G-X2REH4L1M5"
-
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
- // Function to ping Firebase every 15 minutes
-    function pingFirebase() {
-        // Replace '/your/data/path' with the actual path you want to read
-        const ref = database.ref('/your/data/path');
 
-        // Perform a read operation (fetching a value) from Firebase
-        ref.once('value', (snapshot) => {
-            // Do nothing with the data, it's just a ping
-        });
-    }
-
-    // Periodically ping Firebase every 15 minutes (900,000 milliseconds)
-    setInterval(pingFirebase, 900000);
-</script>
         let lapStart1 = 0;
         let lapStart2 = 0;
         let running1 = false;
@@ -262,7 +247,7 @@
 
         function sendLapDataToFirebase(conveyor, lapTime, timeOfDay) {
             // Check if the lap time is greater than 15 minutes (900,000 milliseconds)
-            if (lapTime > 1) {
+            if (lapTime > 900000) {
                 // Send lap time data to Firebase
                 database.ref(`laps/${conveyor}`).push({
                     lapTime: lapTime,
