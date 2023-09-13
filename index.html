@@ -87,7 +87,20 @@
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+ // Function to ping Firebase every 15 minutes
+    function pingFirebase() {
+        // Replace '/your/data/path' with the actual path you want to read
+        const ref = database.ref('/your/data/path');
 
+        // Perform a read operation (fetching a value) from Firebase
+        ref.once('value', (snapshot) => {
+            // Do nothing with the data, it's just a ping
+        });
+    }
+
+    // Periodically ping Firebase every 15 minutes (900,000 milliseconds)
+    setInterval(pingFirebase, 900000);
+</script>
         let lapStart1 = 0;
         let lapStart2 = 0;
         let running1 = false;
