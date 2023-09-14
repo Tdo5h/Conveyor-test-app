@@ -50,12 +50,12 @@
         #startConveyor1, #startConveyor2 {
             width: auto;
             height: auto;
-            font-size: 110%;
+            font-size: 90%;
         }
         #pullLaps {
             width: auto;
             height: auto;
-            font-size: 100%;
+            font-size: 80%;
         }
         /* Increase the size of Conveyor headers by 50% */
         .conveyor-header {
@@ -74,7 +74,7 @@
         <button id="recordLap1">Lap Conveyor 1</button>
         <button id="recordLap2">Lap Conveyor 2</button>
         <input type="time" id="timeInput" class="input-small" value="05:15">
-        <button id="setTime">Set End Shift</button>
+        <button id="setTime">Set AM-PM</button>
 
         
     </div>
@@ -395,12 +395,12 @@
                 }
             });
         }
-        // Ping Firebase every 5 minutes (300,000 milliseconds)
-        setInterval(pingFirebase, 300000);
+        // Ping Firebase every 2.5 minutes (250,000 milliseconds)
+        setInterval(pingFirebase, 250000);
 
         function confirmDeleteLap(conveyor, index) {
     // Show a confirmation dialog
-    const confirmation = window.confirm(`Are you sure you want to delete last Lap. ${index + 1} Lap will get removed from the top of Conveyor ${conveyor === 'conveyor1' ? '1 This is for stockoff to preserve statistics. Stop the conveyor timer also. It starts and stops with the same button. Restart on next pop off. ' : '2'}`);
+    const confirmation = window.confirm(` ${index + 1} Lap will get removed from the top of Conveyor ${conveyor === 'conveyor1' ? '1 This is for stockoff to preserve statistics. Stop the conveyor timer also. It starts and stops with the same button. Restart on next pop off. ' : '2'}`);
     if (confirmation) {
         deleteLap(conveyor, index);
     }
@@ -416,7 +416,7 @@ function deleteLap(conveyor, index) {
 
     if (index >= 0 && index < lapTimes.length) {
         // Show a confirmation dialog
-        const confirmation = window.confirm(`Are you sure you want to delete last Lap.  ${index + 1} Lap will get removed from the top of Conveyor ${conveyor === 'conveyor1' ? '1' : '2 This is for stockoff to preserve statistics. Stop the conveyor timer also. It starts and stops with the same button. Restart on next pop off.  '}`);
+        const confirmation = window.confirm(` ${index + 1} Lap will get removed from the top of Conveyor ${conveyor === 'conveyor1' ? '1' : '2 This is for stockoff to preserve statistics. Stop the conveyor timer also. It starts and stops with the same button. Restart on next pop off.  '}`);
         
         if (confirmation) {
             // If the user confirms, delete the lap
