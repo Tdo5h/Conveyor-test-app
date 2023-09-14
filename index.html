@@ -50,7 +50,12 @@
         #startConveyor1, #startConveyor2 {
             width: auto;
             height: auto;
-            font-size: 150%;
+            font-size: 120%;
+        }
+        #pullLaps {
+            width: auto;
+            height: auto;
+            font-size: 120%;
         }
         /* Increase the size of Conveyor headers by 50% */
         .conveyor-header {
@@ -62,8 +67,8 @@
     <div class="content">
         <h1 style="font-size: 2.2rem;">Conveyor Calculator</h1>
         <button id="pullLaps">Pull Laps</button>
-        <button onclick="deleteLap('conveyor1', 0)">Delete Lap 1</button>
-        <button onclick="deleteLap('conveyor2', 0)">Delete Lap 2</button>
+        <button onclick="deleteLap('conveyor1', 0)">Delete Last Lap Con1</button>
+        <button onclick="deleteLap('conveyor2', 0)">Delete Last Lap Con2</button>
         <button id="startConveyor1">Start Conveyor 1</button>
         <button id="startConveyor2">Start Conveyor 2</button>
         <button id="recordLap1">Lap Conveyor 1</button>
@@ -393,22 +398,35 @@
         // Ping Firebase every 5 minutes (300,000 milliseconds)
         setInterval(pingFirebase, 300000);
 
-      
+        function confirmDeleteLap(conveyor, index) {
+    // Show a confirmation dialog
+    const confirmation = window.confirm(`Are you sure you want to delete Lap ${index + 1} on Conveyor ${conveyor === 'conveyor1' ? '1' : '2'}?`);
+    if (confirmation) {
+        deleteLap(conveyor, index);
+    }
+}
 
-        // New code for deleting laps
-        function deleteLap(conveyor, index) {
-            let lapTimes;
-            if (conveyor === 'conveyor1') {
-                lapTimes = lapTimes1;
-            } else if (conveyor === 'conveyor2') {
-                lapTimes = lapTimes2;
-            }
+function deleteLap(conveyor, index) {
+    let lapTimes;
+    if (conveyor === 'conveyor1') {
+        lapTimes = lapTimes1;
+    } else if (conveyor === 'conveyor2') {
+        lapTimes = lapTimes2;
+    }
 
-            if (index >= 0 && index < lapTimes.length) {
-                lapTimes.splice(index, 1); // Remove the lap at the specified index
-                displayStats(); // Update the displayed lap times
-            }
+    if (index >= 0 && index < lapTimes.length) {
+        // Show a confirmation dialog
+        const confirmation = window.confirm(`Are you sure you want to delete Lap ${index + 1} on Conveyor ${conveyor === 'conveyor1' ? '1' : '2'}?`);
+        
+        if (confirmation) {
+            // If the user confirms, delete the lap
+            lapTimes.splice(index, 1); // Remove the lap at the specified index
+            displayStats(); // Update the statistics
         }
+    }
+}
+
+
         window.deleteLap = deleteLap;
         displayStats();
     
