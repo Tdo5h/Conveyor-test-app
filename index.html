@@ -57,18 +57,19 @@
         <h1 style="font-size: 2.2rem;">Conveyor Calculator</h1>
         <button id="startConveyor1">Start Conveyor 1</button>
         <button id="startConveyor2">Start Conveyor 2</button>
+        <button onclick="deleteLap('conveyor1', 0)">Delete Lap 1</button>
+        <button onclick="deleteLap('conveyor2', 0)">Delete Lap 2</button>
         <button id="recordLap1">Lap Conveyor 1</button>
         <button id="recordLap2">Lap Conveyor 2</button>
         <input type="time" id="timeInput" class="input-small" value="05:15">
         <button id="setTime">Set End Shift</button>
-        <button id="pullLaps">Pull Laps</button> <!-- Added "Pull Laps" button -->
+        <button id="pullLaps">Pull Laps</button>
     </div>
     <div id="stats" class="content">
         <!-- Display statistics here -->
     </div>
     <div id="countdown" class="countdown-timer">Time to Shift Change: 00:00:00</div>
-    <div id="clock" class="countdown-timer"></div> <!-- Added for displaying the clock -->
-
+    <div id="clock" class="countdown-timer"></div>
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database-compat.js"></script>
     <script>
@@ -82,7 +83,6 @@
             messagingSenderId: "708197721355",
             appId: "1:708197721355:web:234d1d9223b125a657ee0e",
             measurementId: "G-X2REH4L1M5"
-
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -229,20 +229,45 @@
         }
 
         document.getElementById('startConveyor1').addEventListener('click', () => {
+            const button = document.getElementById('startConveyor1');
             if (!running1) {
                 lapStart1 = Date.now();
                 running1 = true;
+                button.textContent = "Stop Conveyor 1"; // Change button text to "Stop Conveyor 1"
                 startCountdown();
                 displayStats();
+            } else {
+                running1 = false;
+                button.textContent = "Start Conveyor 1"; // Change button text back to "Start Conveyor 1"
+                // Calculate and update work to be done if needed
+                if (timeDifferenceRemaining > 0) {
+                    workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
+                    displayStats();
+                }
             }
         });
 
+        document.addEventListener('DOMContentLoaded', function() {
+            // Your JavaScript code here
+            // Add event listeners and perform DOM operations
+        });
+
         document.getElementById('startConveyor2').addEventListener('click', () => {
+            const button = document.getElementById('startConveyor2');
             if (!running2) {
                 lapStart2 = Date.now();
                 running2 = true;
+                button.textContent = "Stop Conveyor 2"; // Change button text to "Stop Conveyor 2"
                 startCountdown();
                 displayStats();
+            } else {
+                running2 = false;
+                button.textContent = "Start Conveyor 2"; // Change button text back to "Start Conveyor 2"
+                // Calculate and update work to be done if needed
+                if (timeDifferenceRemaining > 0) {
+                    workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
+                    displayStats();
+                }
             }
         });
 
@@ -309,7 +334,7 @@
             // Show confirmation dialog
             const confirmPull = confirm("Are you sure you want to pull laps from Firebase?");
             if (confirmPull) {
-                // Retrieve the newest 4 laps from Firebase for Conveyor 1
+                // Retrieve the newest 6 laps from Firebase for Conveyor 1
                 const lapsRef1 = database.ref('laps/conveyor1').limitToLast(6);
                 lapsRef1.once('value', (snapshot) => {
                     const data = snapshot.val();
@@ -346,18 +371,39 @@
         // Automatically click the "Set Time" button every 1 second
         setInterval(simulateSetTimeButtonClick, 1000);
         
+        // New function to ping Firebase
         function pingFirebase() {
-    const ref = database.ref('.info/connected');
-    ref.on('value', (snap) => {
-        if (snap.val() === true) {
-            console.log('Connected to Firebase');
-        } else {
-            console.log('Disconnected from Firebase');
+            const ref = database.ref('.info/connected');
+            ref.on('value', (snap) => {
+                if (snap.val() === true) {
+                    console.log('Connected to Firebase');
+                } else {
+                    console.log('Disconnected from Firebase');
+                }
+            });
         }
-    });
-}
         // Ping Firebase every 5 minutes (300,000 milliseconds)
-        setInterval(pingFirebase, 300000); 
+        setInterval(pingFirebase, 300000);
+
+      
+
+        // New code for deleting laps
+        function deleteLap(conveyor, index) {
+            let lapTimes;
+            if (conveyor === 'conveyor1') {
+                lapTimes = lapTimes1;
+            } else if (conveyor === 'conveyor2') {
+                lapTimes = lapTimes2;
+            }
+
+            if (index >= 0 && index < lapTimes.length) {
+                lapTimes.splice(index, 1); // Remove the lap at the specified index
+                displayStats(); // Update the displayed lap times
+            }
+        }
+        window.deleteLap = deleteLap;
+        displayStats();
+    
     </script>
 </body>
-</html> 
+</html>
