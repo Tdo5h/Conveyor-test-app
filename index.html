@@ -82,6 +82,7 @@
             messagingSenderId: "708197721355",
             appId: "1:708197721355:web:234d1d9223b125a657ee0e",
             measurementId: "G-X2REH4L1M5"
+
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -247,7 +248,7 @@
 
         function sendLapDataToFirebase(conveyor, lapTime, timeOfDay) {
             // Check if the lap time is greater than 15 minutes (900,000 milliseconds)
-            if (lapTime > 90) {
+            if (lapTime > 1) {
                 // Send lap time data to Firebase
                 database.ref(`laps/${conveyor}`).push({
                     lapTime: lapTime,
@@ -321,7 +322,6 @@
                         displayStats();
                     }
                 });
-
                 // Retrieve the newest 4 laps from Firebase for Conveyor 2
                 const lapsRef2 = database.ref('laps/conveyor2').limitToLast(6);
                 lapsRef2.once('value', (snapshot) => {
@@ -335,31 +335,28 @@
                         displayStats();
                     }
                 });
-
-                // Automatically start both conveyors
-                if (!running1) {
-                    lapStart1 = Date.now();
-                    running1 = false;
-                    startCountdown();
-                    displayStats();
-                }
-                if (!running2) {
-                    lapStart2 = Date.now();
-                    running2 = false;
-                    startCountdown();
-                    displayStats();
                 }
             }
-        });
-
+        );
         // Function to simulate a click on the "Set Time" button
         function simulateSetTimeButtonClick() {
             const setTimeButton = document.getElementById('setTime');
             setTimeButton.click();
         }
-
         // Automatically click the "Set Time" button every 1 second
         setInterval(simulateSetTimeButtonClick, 1000);
+        
+        function pingFirebase() {
+    const ref = database.ref('.info/connected');
+    ref.on('value', (snap) => {
+        if (snap.val() === true) {
+            console.log('Connected to Firebase');
+        } else {
+            console.log('Disconnected from Firebase');
+        }
+    });
+}
+        setInterval(pingFirebase, 300000); 
     </script>
 </body>
-</html>
+</html> 
