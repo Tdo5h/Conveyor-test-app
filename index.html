@@ -83,11 +83,6 @@
             font-size: 230%;
         }
     
-        #pullLaps{
-            width: auto;
-            height: auto;
-            font-size: 120%;
-        }
 
         /* Increase the size of Conveyor headers by 50% */
         .conveyor-header {
@@ -144,18 +139,17 @@ button {
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
         <div style="display: flex; justify-content: start; width: 100%;">
-            <input type="time" id="timeInput" class="input-small" style="border: 1px solid black; border-radius: 5px; margin-right: 0px; padding: 0;" value="05:15">
-            <button id="setTime" style="border: 1px solid black; border-radius: 5px; margin-left: 2px; padding: 6;">Set AM-PM</button>            
-            <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto;">Pull Laps</button>
+            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px;">Settings</button>
+            <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px;">Pull Laps</button>
         </div>              
-        <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-top: 10px;">Settings</button>
+       
     </div>
     
     <div id="settingsPopup" class="popup">
         <div class="popup-content">
             <!-- Add content for the settings window here -->
             <button onclick="openDeleteLapPopup('conveyor2')" style="border: 1px solid black; border-radius: 5px;">Delete Lap Conveyor 2</button>
-            <button onclick="openDeleteLapPopup('conveyor1')" style="border: 1px solid black; border-radius: 5px;">Delete Lap Conveyor 1</button>
+            <button onclick="openDeleteLapPopup('conveyor1')" style="border: 1px solid black; margin-left: 20px; border-radius: 5px;">Delete Lap Conveyor 1</button>
             <div id="deleteLapPopup" class="popup">
                 <div class="popup-content">
                     <h2>Select a Lap to Delete</h2>
@@ -164,7 +158,7 @@ button {
                 </div>
             </div>
 
-            <div class="black" style="margin-top: 20px;">
+            <div class="black" style="margin-top: 30px;">
                 Subtract Cut conveyor1 =
                 <input type="number" id="subtractLoad1" class="input-small" style="border: 1px solid black; border-radius: 5px;" placeholder="Subtract Load 1">
             </div>
@@ -173,6 +167,14 @@ button {
                 <input type="number" id="subtractLoad2" class="input-small" style="border: 1px solid black; border-radius: 5px;" placeholder="Subtract Load 2">
             </div>
 
+            <div class="black" style="margin-top: 20px;">
+                Change End Shift Time And Push Set
+                <input type="time" id="timeInput" class="input-small" style="border: 1px solid black;margin-top: 10px; border-radius: 5px; margin-right: 0px; padding: 0;" value="05:15">
+            <button id="setTime" style="border: 1px solid black; border-radius: 5px; margin-left: 2px;margin-top: 10px; padding: 6;">Set</button>            
+            </div>
+
+           
+       
         </div>
         <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; position: absolute; margin-top: 20px; left: 50%; transform: translate(-50%, -50%);">Done</button>
     </div>
