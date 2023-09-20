@@ -23,6 +23,10 @@
         }
 
         .popup-content {
+    background-image: url('back2.jpg');
+    background-size: cover;
+    background-repeat: no-repeat; 
+    background-position: bottom right;  /* Adjust this line */
     max-height: 400px; /* You can adjust this value as per your requirement */
     overflow-y: auto;
 }
@@ -39,6 +43,9 @@
     font-size: 17px;  /* Adjust as per your need */
     padding: 7px 12px; /* Vertical and horizontal padding */
     cursor: pointer; /* To change cursor to hand when hovering */
+    border: 1px solid black;
+    border-radius: 5px;
+    margin-top: 5px;
 }
 
 
@@ -57,7 +64,7 @@
         .red { color: red; }
         .green { color: green; }
         .blue { color: blue; }
-         .purple { color: rgb(248, 0, 248); }
+         .purple { color: purple; }
         .orange { color: orange; }
         .content {
             background-color: rgba(255, 255, 255, 0.7);
@@ -80,15 +87,10 @@
             font-size: 230%;
         }
     
-        #pullLaps{
-            width: auto;
-            height: auto;
-            font-size: 120%;
-        }
 
         /* Increase the size of Conveyor headers by 50% */
         .conveyor-header {
-            font-size: 180%;
+        font-size: 180%;
         }
 
 /* Style for the pop-up window */
@@ -102,6 +104,36 @@
     background-color: rgba(0, 0, 0, 0.242);
     z-index: 1;
 }
+button {
+    color: rgb(0, 0, 0);
+    background-color: white;
+}
+
+#countdownDisplay {
+       
+        bottom: 0;         /* Positions it at the bottom of the viewport */
+        left: 0;           /* Aligns it to the left side */
+        width: 100%;       /* Makes it span the full width of the viewport */
+       
+        color: rgb(255, 0, 0);      /* White text color for visibility */
+        text-align: left; /* Center-aligns the text */
+        padding: 10px 0;   /* Adds some vertical padding */
+    }
+   
+    #conveyorCalculator {
+   
+    top: 0;                /* Positions it at the top of the viewport */
+    left: 0;               /* Start from the very left edge of the viewport */
+    width: 100%;           /* Makes it span the full width of the viewport */
+    text-align: center;    /* Center-aligns the text */
+   
+    color: rgb(0, 0, 0);       /* White text color for visibility */
+    padding: 10px 0;       /* Adds some vertical padding */
+    box-sizing: border-box;/* Ensures that padding and border are included in the total width and height */
+    z-index: 1000;         /* Ensures it stays above other elements */
+}
+
+
 
 .popup-content {
     background-color: white;
@@ -126,35 +158,37 @@
 
     </style>
 </head><div class="content">
-    <h1 style="font-size: 2.2rem;">Conveyor Calculator</h1>
+    <h1 id="conveyorCalculator" style="font-size: 2.2rem;">Conveyor Calculator</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button id="startConveyor2" style="border: 1px solid black; border-radius: 5px; width: 200px; margin-right: 20px;">START CONVEYOR 2</button>
-        <button id="startConveyor1" style="border: 1px solid black; border-radius: 5px; width: 200px; margin-left: 20px;">START CONVEYOR 1</button>
+        <button id="startConveyor2" style="border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px;margin-right: 20px;">START CONVEYOR 2</button>
+        <button id="startConveyor1" style="border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px; margin-left: 20px;">START CONVEYOR 1</button>
     </div>
     <div style="display: flex; justify-content: center; margin-top: 20px;">
         <button id="recordLap2" style="border: 1px solid black; border-radius: 5px; width: 170px; margin-right: 5px; font-size: 20px;">Lap Conveyor 2</button>
         <button id="recordLap1" style="border: 1px solid black; border-radius: 5px; width: 170px; margin-left: 5px; font-size: 20px;">Lap Conveyor 1</button>
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-        <input type="time" id="timeInput" class="input-small" style="border: 1px solid black; border-radius: 5px;" value="05:15">
-        <button id="setTime" style="border: 1px solid black; border-radius: 5px; display: none; margin-left: 20px; margin-right: 20px; width: 150px; height: 50px;">Set AM-PM</button>
-        <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin: 0 auto;">Settings</button>
-        <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: 20px;">Pull Laps</button>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
+        <div style="display: flex; justify-content: start; width: 100%;">
+            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px;">Settings</button>
+            <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px;">Pull Laps</button>
+        </div>              
+       
     </div>
+    
     <div id="settingsPopup" class="popup">
         <div class="popup-content">
             <!-- Add content for the settings window here -->
             <button onclick="openDeleteLapPopup('conveyor2')" style="border: 1px solid black; border-radius: 5px;">Delete Lap Conveyor 2</button>
             <button onclick="openDeleteLapPopup('conveyor1')" style="border: 1px solid black; border-radius: 5px;">Delete Lap Conveyor 1</button>
             <div id="deleteLapPopup" class="popup">
-                <div class="popup-content">
-                    <h2>Select a Lap to Delete</h2>
+                <div class="popup-content2">
+                    <h2></h2>
                     <div id="lapList"></div>
                     <button onclick="closeDeleteLapPopup()" style="border: 1px solid black; border-radius: 5px;">Cancel</button>
                 </div>
             </div>
 
-            <div class="black" style="margin-top: 20px;">
+            <div class="black" style="margin-top: 40px;">
                 Subtract Cut conveyor1 =
                 <input type="number" id="subtractLoad1" class="input-small" style="border: 1px solid black; border-radius: 5px;" placeholder="Subtract Load 1">
             </div>
@@ -162,20 +196,15 @@
                 Subtract Cut conveyor2 =
                 <input type="number" id="subtractLoad2" class="input-small" style="border: 1px solid black; border-radius: 5px;" placeholder="Subtract Load 2">
             </div>
-<!-- Conveyor 1 Percentage Inputs -->
-<div class="percentage-inputs">
-    <input type="number" id="percentage1_1" min="1" max="9" placeholder="%1 for Conveyor 1">
-    <input type="number" id="percentage1_2" min="1" max="9" placeholder="%2 for Conveyor 1">
-    <input type="number" id="percentage1_3" min="1" max="9" placeholder="%3 for Conveyor 1">
-</div>
 
-<!-- Conveyor 2 Percentage Inputs -->
-<div class="percentage-inputs">
-    <input type="number" id="percentage2_1" min="1" max="9" placeholder="%1 for Conveyor 2">
-    <input type="number" id="percentage2_2" min="1" max="9" placeholder="%2 for Conveyor 2">
-    <input type="number" id="percentage2_3" min="1" max="9" placeholder="%3 for Conveyor 2">
-</div>
+            <div class="black" style="margin-top: 30px;">
+                Set AM-PM  
+                <input type="time" id="timeInput" class="input-small" style="border: 1px solid black;margin-top: 10px;color: black; background-color: white;border-radius: 5px; margin-right: 0px; padding: 0;" value="05:15">
+            <button id="setTime" style="border: 1px solid black; display: none; border-radius: 5px; margin-left: 2px;margin-top: 10px; padding: 6;">Set</button>            
+            </div>
 
+           
+       
         </div>
         <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; position: absolute; margin-top: 20px; left: 50%; transform: translate(-50%, -50%);">Done</button>
     </div>
@@ -185,6 +214,7 @@
 </div>
 
 <div id="clock" class="countdown-timer"></div>
+
 
 
 
@@ -203,9 +233,9 @@
             measurementId: "G-X2REH4L1M5"
         };
 
-      // Initialize Firebase
+// Initialize Firebase initially
 firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+let database = firebase.database();
 
 let isOnline = true; // Track online/offline status
 
@@ -246,6 +276,23 @@ function retrySendingData(data) {
         console.log('Max retry attempts reached. Data transmission failed.');
     }
 }
+
+// Function to reinitialize Firebase
+function reinitializeFirebase() {
+    // Close the current app instance
+    firebase.app().delete().then(() => {
+        // Re-initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+        console.log("Firebase reinitialized!");
+    }).catch((error) => {
+        console.error("Error reinitializing Firebase:", error);
+    });
+}
+
+// Set an interval to reinitialize Firebase every 30 minutes
+setInterval(reinitializeFirebase, 30 * 60 * 1000);
+
 
 // Listen for online/offline events
 window.addEventListener('online', () => {
@@ -471,7 +518,7 @@ statsDiv.innerHTML += `<div class="green" style="display: none;">Avg 2x - Load C
 
 
     if (timeDifferenceRemaining > 0) {
-        statsDiv.innerHTML += `<div class="red bold">Time to Shift Change: ${formatTime(timeDifferenceRemaining)}</div>`;
+        statsDiv.innerHTML += `<div id="countdownDisplay" class="red bold">Time to Shift Change: ${formatTime(timeDifferenceRemaining)}</div>`;
     }
 }
         function startCountdown() {
@@ -626,7 +673,7 @@ document.getElementById('startConveyor2').addEventListener('click', () => {
      
         document.getElementById('pullLaps').addEventListener('click', () => {
     // Prompt the user to enter the number of laps to pull with a default value of 6
-    const lapCountInput = prompt("  If you won’t to see average for 2 laps pull 2 so on and so forth. The rest will go back to cloud and can be pulled again. If lap times are not pulling then there not sending either. Turn airplane mode on and off to send data and pull laps again. Enter the number of laps to pull:", "6");
+    const lapCountInput = prompt("If lap times are not pulling then there not sending either. Turn airplane mode on and off to send data and pull laps again. Enter the number of laps to pull:", "6");
 
     if (lapCountInput !== null) { // Check if the user clicked OK or Cancel
         // Parse the input as an integer
@@ -718,12 +765,7 @@ document.getElementById('startConveyor2').addEventListener('click', () => {
     displayStats();
 
    
-// Add event listeners to the inputs to trigger the function whenever the value changes
-["percentage1_1", "percentage1_2", "percentage1_3", "percentage2_1", "percentage2_2", "percentage2_3"].forEach(id => {
-    document.getElementById(id).addEventListener("input", () => {
-        updateLiftValues(id.includes("1") ? 1 : 2);
-    });
-});
+
 
 
 });    
