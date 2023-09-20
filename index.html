@@ -444,7 +444,7 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
     statsDiv.innerHTML += '<div class="red conveyor-header">Conveyor 1:</div>';
 
 const averageTime1 = calculateAverageTime(lapTimes1);
-statsDiv.innerHTML += `<div class="green">Average Lap Times: ${formatTime(averageTime1)}</div>`;
+statsDiv.innerHTML += `<div class="green">Average Lap Time: ${formatTime(averageTime1)}</div>`;
 statsDiv.innerHTML += `<div class="black" style="display: none;">Average Last 4 Laps: ${formatTime(calculateAverageTimeX4(lapTimes1))}</div>`;
 statsDiv.innerHTML += `<div class="green" style="display: none;">Average Last 2 Laps: ${formatTime(calculateAverageTimeX2(lapTimes1))}</div>`;
 
