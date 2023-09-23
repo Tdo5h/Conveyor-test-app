@@ -160,8 +160,9 @@ button {
 </head><div class="content">
     <h1 id="conveyorCalculator" style="font-size: 2.2rem;">Conveyor Calculator</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button id="startConveyor2" style="border: 1px solid black; border-radius: 5px; display: none;width: 00px;margin-top: 0px;margin-right: 0px;">START CONVEYOR 2</button>
-        <button id="startConveyor1" style="border: 1px solid black; border-radius: 5px; display: none;width: 00px;margin-top: 0px; margin-left: 0px;">START CONVEYOR 1</button>
+        <button id="startConveyor2" style="border: 1px solid black; border-radius: 5px; display: none; width: 0px; margin-top: 0px; margin-right: 0px;">START CONVEYOR 2</button>
+        <button id="startConveyor1" style="border: 1px solid black; border-radius: 5px; display: none; width: 0px; margin-top: 0px; margin-left: 0px;">START CONVEYOR 1</button>
+        
     </div>
     <div style="display: flex; justify-content: center; margin-top: 20px;">
         <button id="recordLap2" style="border: 1px solid black; border-radius: 5px;display: none; width: 170px; margin-right: 5px; font-size: 0px;">Lap Conveyor 2</button>
@@ -566,47 +567,7 @@ statsDiv.innerHTML += `<div class="green" style="display: none;">Avg 2x - Load C
             return lastFourLaps.length > 0 ? totalLapTime / lastFourLaps.length / 1000 : 0;
         }
 
-      function toggleConveyor1() {
-    const button = document.getElementById('startConveyor1');
-    if (!running1) {
-        lapStart1 = Date.now();
-        running1 = true;
-        button.textContent = "STOP CONVEYOR 1";
-        startCountdown();
-        displayStats();
-    } else {
-        const confirmStop = confirm("Are you sure you want to stop Conveyor 1?");
-        if (confirmStop) {
-            running1 = false;
-            button.textContent = "START CONVEYOR 1";
-            if (timeDifferenceRemaining > 0) {
-                workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
-                displayStats();
-            }
-        }
-    }
-}
 
-function toggleConveyor2() {
-    const button = document.getElementById('startConveyor2');
-    if (!running2) {
-        lapStart2 = Date.now();
-        running2 = true;
-        button.textContent = "STOP CONVEYOR 2";
-        startCountdown();
-        displayStats();
-    } else {
-        const confirmStop = confirm("Are you sure you want to stop Conveyor 2?");
-        if (confirmStop) {
-            running2 = false;
-            button.textContent = "START CONVEYOR 2";
-            if (timeDifferenceRemaining > 0) {
-                workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
-                displayStats();
-            }
-        }
-    }
-}
 
         function sendLapDataToFirebase(conveyor, lapTime, timeOfDay) {
             // Check if the lap time is greater than 15 minutes (900,000 milliseconds)
@@ -711,9 +672,12 @@ function toggleConveyor2() {
 // Function to handle the addition of a new lap
 function handleNewLap(lapData, lapTimes) {
     const newLap = [lapData.lapTime, lapData.timeOfDay];
-    lapTimes.unshift(newLap);
+    lapTimes.push(newLap);  // This will add new laps to the end of the lapTimes array
     displayStats();
 }
+
+
+
 
 let lastLapKey1 = null;
 let lastLapKey2 = null;
@@ -748,16 +712,10 @@ lapsRef2.once('value', (snapshot) => {
     });
 });
 
+
 document.getElementById('pullLaps').addEventListener('click', () => {
     // ... Your existing code for the button click handler ...
 });
-
-
-
-
-
-
-
 
         // Function to simulate a click on the "Set Time" button
         function simulateSetTimeButtonClick() {
@@ -812,8 +770,67 @@ document.getElementById('pullLaps').addEventListener('click', () => {
     // Call the displayStats function if it's defined elsewhere in your code
     displayStats();
 
-   
+ // Automated function to stop Conveyor 1
+function stopConveyor1() {
+    const button = document.getElementById('startConveyor1');
+    running1 = false;
+    button.textContent = "START CONVEYOR 1";
+    if (timeDifferenceRemaining > 0) {
+        workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
+        displayStats();
+    }
+}
 
+// Automated function to stop Conveyor 2
+function stopConveyor2() {
+    const button = document.getElementById('startConveyor2');
+    running2 = false;
+    button.textContent = "START CONVEYOR 2";
+    if (timeDifferenceRemaining > 0) {
+        workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
+        displayStats();
+    }
+}
+
+// Automated function to start Conveyor 1
+function startConveyor1() {
+    const button = document.getElementById('startConveyor1');
+    lapStart1 = Date.now();
+    running1 = true;
+    button.textContent = "STOP CONVEYOR 1";
+    startCountdown();
+    displayStats();
+}
+
+// Automated function to start Conveyor 2
+function startConveyor2() {
+    const button = document.getElementById('startConveyor2');
+    lapStart2 = Date.now();
+    running2 = true;
+    button.textContent = "STOP CONVEYOR 2";
+    startCountdown();
+    displayStats();
+}
+
+// Inside your child_added listener for Conveyor 1:
+lapsRef1.on('child_added', (childSnapshot) => {
+    if (childSnapshot.key !== lastLapKey1) {
+        lastLapKey1 = childSnapshot.key;
+        handleNewLap(childSnapshot.val(), lapTimes1);
+        stopConveyor1(); // Stop Conveyor 1
+        startConveyor1(); // Start Conveyor 1
+    }
+});
+
+// Similarly for Conveyor 2:
+lapsRef2.on('child_added', (childSnapshot) => {
+    if (childSnapshot.key !== lastLapKey2) {
+        lastLapKey2 = childSnapshot.key;
+        handleNewLap(childSnapshot.val(), lapTimes2);
+        stopConveyor2(); // Stop Conveyor 2
+        startConveyor2(); // Start Conveyor 2
+    }
+});
 
 
 });    
