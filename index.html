@@ -160,11 +160,11 @@ button {
 </head><div class="content">
     <h1 id="conveyorCalculator" style="font-size: 2.2rem;">Conveyor Calculator</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button id="startConveyor2" style="border: 1px solid black; border-radius: 5px; display: block;width: 00px;margin-top: 0px;margin-right: 0px;">START CONVEYOR 2</button>
+        <button id="startConveyor2" style="border: 1px solid black; border-radius: 5px; display: none;width: 00px;margin-top: 0px;margin-right: 0px;">START CONVEYOR 2</button>
         <button id="startConveyor1" style="border: 1px solid black; border-radius: 5px; display: none;width: 00px;margin-top: 0px; margin-left: 0px;">START CONVEYOR 1</button>
     </div>
     <div style="display: flex; justify-content: center; margin-top: 20px;">
-        <button id="recordLap2" style="border: 1px solid black; border-radius: 5px;display: block; width: 170px; margin-right: 5px; font-size: 0px;">Lap Conveyor 2</button>
+        <button id="recordLap2" style="border: 1px solid black; border-radius: 5px;display: none; width: 170px; margin-right: 5px; font-size: 0px;">Lap Conveyor 2</button>
         <button id="recordLap1" style="border: 1px solid black; border-radius: 5px;display: none; width: 170px; margin-left: 5px; font-size: 0px;">Lap Conveyor 1</button>
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; margin-top: 0px;">
@@ -566,56 +566,51 @@ statsDiv.innerHTML += `<div class="green" style="display: none;">Avg 2x - Load C
             return lastFourLaps.length > 0 ? totalLapTime / lastFourLaps.length / 1000 : 0;
         }
 
-        document.getElementById('startConveyor1').addEventListener('click', () => {
+      function toggleConveyor1() {
     const button = document.getElementById('startConveyor1');
     if (!running1) {
         lapStart1 = Date.now();
         running1 = true;
-        button.textContent = "STOP CONVEYOR 1"; // Change button text to "Stop Conveyor 1"
+        button.textContent = "STOP CONVEYOR 1";
         startCountdown();
         displayStats();
     } else {
-        // Ask for confirmation before stopping Conveyor 1
         const confirmStop = confirm("Are you sure you want to stop Conveyor 1?");
         if (confirmStop) {
             running1 = false;
-            button.textContent = "START CONVEYOR 1"; // Change button text back to "Start Conveyor 1"
-            // Calculate and update work to be done if needed
+            button.textContent = "START CONVEYOR 1";
             if (timeDifferenceRemaining > 0) {
                 workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
                 displayStats();
             }
         }
     }
-});
+}
 
-// Update the event listener for Conveyor 2 in a similar manner
-document.getElementById('startConveyor2').addEventListener('click', () => {
+function toggleConveyor2() {
     const button = document.getElementById('startConveyor2');
     if (!running2) {
         lapStart2 = Date.now();
         running2 = true;
-        button.textContent = "STOP CONVEYOR 2"; // Change button text to "Stop Conveyor 2"
+        button.textContent = "STOP CONVEYOR 2";
         startCountdown();
         displayStats();
     } else {
-        // Ask for confirmation before stopping Conveyor 2
         const confirmStop = confirm("Are you sure you want to stop Conveyor 2?");
         if (confirmStop) {
             running2 = false;
-            button.textContent = "START CONVEYOR 2"; // Change button text back to "Start Conveyor 2"
-            // Calculate and update work to be done if needed
+            button.textContent = "START CONVEYOR 2";
             if (timeDifferenceRemaining > 0) {
                 workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
                 displayStats();
             }
         }
     }
-});
+}
 
         function sendLapDataToFirebase(conveyor, lapTime, timeOfDay) {
             // Check if the lap time is greater than 15 minutes (900,000 milliseconds)
-            if (lapTime > 9) {
+            if (lapTime > 900000) {
                 // Send lap time data to Firebase
                 database.ref(`laps/${conveyor}`).push({
                     lapTime: lapTime,
@@ -712,6 +707,58 @@ document.getElementById('startConveyor2').addEventListener('click', () => {
         }
     }
 });
+
+// Function to handle the addition of a new lap
+function handleNewLap(lapData, lapTimes) {
+    const newLap = [lapData.lapTime, lapData.timeOfDay];
+    lapTimes.unshift(newLap);
+    displayStats();
+}
+
+let lastLapKey1 = null;
+let lastLapKey2 = null;
+
+// Set up listeners for Conveyor 1
+const lapsRef1 = database.ref('laps/conveyor1').limitToLast(1);
+lapsRef1.once('value', (snapshot) => {
+    const entries = Object.entries(snapshot.val() || {});
+    if (entries.length > 0) {
+        lastLapKey1 = entries[0][0];  // Store the key of the last lap
+    }
+    lapsRef1.on('child_added', (childSnapshot) => {
+        if (childSnapshot.key !== lastLapKey1) {
+            lastLapKey1 = childSnapshot.key;  // Update the key of the last lap
+            handleNewLap(childSnapshot.val(), lapTimes1);
+        }
+    });
+});
+
+// Set up listeners for Conveyor 2
+const lapsRef2 = database.ref('laps/conveyor2').limitToLast(1);
+lapsRef2.once('value', (snapshot) => {
+    const entries = Object.entries(snapshot.val() || {});
+    if (entries.length > 0) {
+        lastLapKey2 = entries[0][0];  // Store the key of the last lap
+    }
+    lapsRef2.on('child_added', (childSnapshot) => {
+        if (childSnapshot.key !== lastLapKey2) {
+            lastLapKey2 = childSnapshot.key;  // Update the key of the last lap
+            handleNewLap(childSnapshot.val(), lapTimes2);
+        }
+    });
+});
+
+document.getElementById('pullLaps').addEventListener('click', () => {
+    // ... Your existing code for the button click handler ...
+});
+
+
+
+
+
+
+
+
         // Function to simulate a click on the "Set Time" button
         function simulateSetTimeButtonClick() {
             const setTimeButton = document.getElementById('setTime');
