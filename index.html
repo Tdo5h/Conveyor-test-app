@@ -628,94 +628,81 @@ statsDiv.innerHTML += `<div class="green" style="display: none;">Avg 2x - Load C
             }
         });
      
-document.getElementById('pullLaps').addEventListener('click', () => {
-    // Prompt the user to enter the number of laps to pull with a default value of 6
+document.getElementById('pullLaps').addEventListener('click', pullLapsFromFirebase);
+
+function pullLapsFromFirebase() {
     const lapCountInput = prompt("Enter the number of laps to pull:", "6");
 
-    if (lapCountInput !== null) { // Check if the user clicked OK or Cancel
-        // Parse the input as an integer
+    if (lapCountInput !== null) {
         const lapCount = parseInt(lapCountInput);
 
         if (!isNaN(lapCount) && lapCount > 0) {
-            // Retrieve the specified number of laps from Firebase for Conveyor 1
-            const lapsRef1 = database.ref('laps/conveyor1').limitToLast(lapCount);
-            lapsRef1.once('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    lapTimes1.length = 0; // Clear the existing lap times
-                    for (const key in data) {
-                        const lapData = data[key];
-                        lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
-                    }
-                    displayStats();
-                }
-            });
-            // Retrieve the specified number of laps from Firebase for Conveyor 2
-            const lapsRef2 = database.ref('laps/conveyor2').limitToLast(lapCount);
-            lapsRef2.once('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    lapTimes2.length = 0; // Clear the existing lap times
-                    for (const key in data) {
-                        const lapData = data[key];
-                        lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
-                    }
-                    displayStats();
-                }
-            });
+            pullAndDisplay('conveyor1', lapTimes1, lapCount);
+            pullAndDisplay('conveyor2', lapTimes2, lapCount);
         } else {
             alert("Please enter a valid number of laps greater than 0.");
         }
     }
-});
+}
 
-// Function to handle the addition of a new lap
+function pullAndDisplay(conveyor, lapTimesArray, count) {
+    // Adjust reference based on the conveyor name
+    const boronRefName = conveyor === 'conveyor1' ? 'conveyor1Boron' : 'conveyor2Boron';
+    const lapsRef = database.ref(boronRefName).limitToLast(count);
+
+    lapsRef.once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            lapTimesArray.length = 0; // Clear the existing lap times
+            
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    const entryData = data[key].data;
+                    if (entryData) {
+                        const parsedData = JSON.parse(entryData);  // Parse the stringified JSON
+                        lapTimesArray.push([parsedData.lapTime, parsedData.timeOfDay]);
+                    }
+                }
+            }
+            displayStats();
+        }
+    });
+}
+
 function handleNewLap(lapData, lapTimes) {
     const newLap = [lapData.lapTime, lapData.timeOfDay];
-    lapTimes.push(newLap);  // This will add new laps to the end of the lapTimes array
+    lapTimes.push(newLap);
     displayStats();
 }
 
+// Setup listeners for both conveyors
+setupLapListeners('conveyor1Boron', lapTimes1);
+setupLapListeners('conveyor2Boron', lapTimes2);
 
+function setupLapListeners(conveyor, lapTimesArray) {
+    let lastLapKey = null;
 
-
-let lastLapKey1 = null;
-let lastLapKey2 = null;
-
-// Set up listeners for Conveyor 1
-const lapsRef1 = database.ref('laps/conveyor1').limitToLast(1);
-lapsRef1.once('value', (snapshot) => {
-    const entries = Object.entries(snapshot.val() || {});
-    if (entries.length > 0) {
-        lastLapKey1 = entries[0][0];  // Store the key of the last lap
-    }
-    lapsRef1.on('child_added', (childSnapshot) => {
-        if (childSnapshot.key !== lastLapKey1) {
-            lastLapKey1 = childSnapshot.key;  // Update the key of the last lap
-            handleNewLap(childSnapshot.val(), lapTimes1);
+    // Listen to conveyor1Boron and conveyor2Boron paths
+    const lapsRef = database.ref(`${conveyor}`).limitToLast(1);
+    
+    lapsRef.once('value', (snapshot) => {
+        const entries = Object.entries(snapshot.val() || {});
+        if (entries.length > 0) {
+            lastLapKey = entries[0][0];  // Store the key of the last lap
         }
+
+        lapsRef.on('child_added', (childSnapshot) => {
+            if (childSnapshot.key !== lastLapKey) {
+                lastLapKey = childSnapshot.key;  // Update the key of the last lap
+                
+                const rawData = childSnapshot.val();
+                const parsedData = JSON.parse(rawData.data);
+                handleNewLap(parsedData, lapTimesArray);
+            }
+        });
     });
-});
+}
 
-// Set up listeners for Conveyor 2
-const lapsRef2 = database.ref('laps/conveyor2').limitToLast(1);
-lapsRef2.once('value', (snapshot) => {
-    const entries = Object.entries(snapshot.val() || {});
-    if (entries.length > 0) {
-        lastLapKey2 = entries[0][0];  // Store the key of the last lap
-    }
-    lapsRef2.on('child_added', (childSnapshot) => {
-        if (childSnapshot.key !== lastLapKey2) {
-            lastLapKey2 = childSnapshot.key;  // Update the key of the last lap
-            handleNewLap(childSnapshot.val(), lapTimes2);
-        }
-    });
-});
-
-
-document.getElementById('pullLaps').addEventListener('click', () => {
-    // ... Your existing code for the button click handler ...
-});
 
 
         // Function to simulate a click on the "Set Time" button
@@ -813,25 +800,7 @@ function startConveyor2() {
     displayStats();
 }
 
-// Inside your child_added listener for Conveyor 1:
-lapsRef1.on('child_added', (childSnapshot) => {
-    if (childSnapshot.key !== lastLapKey1) {
-        lastLapKey1 = childSnapshot.key;
-        handleNewLap(childSnapshot.val(), lapTimes1);
-        stopConveyor1(); // Stop Conveyor 1
-        startConveyor1(); // Start Conveyor 1
-    }
-});
 
-// Similarly for Conveyor 2:
-lapsRef2.on('child_added', (childSnapshot) => {
-    if (childSnapshot.key !== lastLapKey2) {
-        lastLapKey2 = childSnapshot.key;
-        handleNewLap(childSnapshot.val(), lapTimes2);
-        stopConveyor2(); // Stop Conveyor 2
-        startConveyor2(); // Start Conveyor 2
-    }
-});
 
 
 });    
