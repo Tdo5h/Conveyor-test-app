@@ -628,37 +628,35 @@ statsDiv.innerHTML += `<div class="green" style="display: none;">Avg 2x - Load C
             }
         });
      
-   document.getElementById('pullLaps').addEventListener('click', () => {
+document.getElementById('pullLaps').addEventListener('click', pullLapsFromFirebase);
+
+function pullLapsFromFirebase() {
     const lapCountInput = prompt("Enter the number of laps to pull:", "6");
 
     if (lapCountInput !== null) {
         const lapCount = parseInt(lapCountInput);
 
         if (!isNaN(lapCount) && lapCount > 0) {
-            retrieveAndTransformData('conveyor1Boron', lapTimes1, lapCount);
-            retrieveAndTransformData('conveyor2Boron', lapTimes2, lapCount);
+            pullAndDisplay('conveyor1', lapTimes1, lapCount);
+            pullAndDisplay('conveyor2', lapTimes2, lapCount);
         } else {
             alert("Please enter a valid number of laps greater than 0.");
         }
     }
-});
+}
 
-function retrieveAndTransformData(conveyorRef, lapTimes, lapCount) {
-    const lapsRef = database.ref(`laps/${conveyorRef}`).limitToLast(lapCount);
+function pullAndDisplay(conveyor, lapTimesArray, count) {
+    const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(count);
     lapsRef.once('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            lapTimes.length = 0; // Clear the existing lap times
-
+            lapTimesArray.length = 0; // Clear the existing lap times
+            
             for (const key in data) {
-                const rawData = data[key];
-
-                // Transform Particle console's data into desired structure
-                const transformedData = JSON.parse(rawData.data);
-
-                lapTimes.push([transformedData.lapTime, transformedData.timeOfDay]);
+                const entry = data[key].data; // Assume 'data' is a stringified JSON
+                const parsedData = JSON.parse(entry);
+                lapTimesArray.push([parsedData.lapTime, parsedData.timeOfDay]);
             }
-
             displayStats();
         }
     });
@@ -670,10 +668,16 @@ function handleNewLap(lapData, lapTimes) {
     displayStats();
 }
 
-function setupParticleListeners(conveyorRef, lapTimes) {
+let lapTimes1 = [];
+let lapTimes2 = [];
+
+setupLapListeners('conveyor1', lapTimes1);
+setupLapListeners('conveyor2', lapTimes2);
+
+function setupLapListeners(conveyor, lapTimesArray) {
     let lastLapKey = null;
 
-    const lapsRef = database.ref(`laps/${conveyorRef}`).limitToLast(1);
+    const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(1);
     lapsRef.once('value', (snapshot) => {
         const entries = Object.entries(snapshot.val() || {});
         if (entries.length > 0) {
@@ -683,23 +687,15 @@ function setupParticleListeners(conveyorRef, lapTimes) {
         lapsRef.on('child_added', (childSnapshot) => {
             if (childSnapshot.key !== lastLapKey) {
                 lastLapKey = childSnapshot.key;  // Update the key of the last lap
-
-                // Transform Particle console's data and add it
+                
                 const rawData = childSnapshot.val();
-                const transformedData = JSON.parse(rawData.data);
-                handleNewLap(transformedData, lapTimes);
+                const parsedData = JSON.parse(rawData.data);
+                handleNewLap(parsedData, lapTimesArray);
             }
         });
     });
 }
 
-// Assuming you've defined lapTimes1 and lapTimes2 elsewhere
-let lapTimes1 = [];
-let lapTimes2 = [];
-
-// Setting up the listeners for the Particle data
-setupParticleListeners('conveyor1Boron', lapTimes1);
-setupParticleListeners('conveyor2Boron', lapTimes2);
 
         // Function to simulate a click on the "Set Time" button
         function simulateSetTimeButtonClick() {
