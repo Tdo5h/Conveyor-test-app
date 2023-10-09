@@ -279,22 +279,56 @@ function retrySendingData(data) {
     }
 }
 
-// Function to reinitialize Firebase
-function reinitializeFirebase() {
-    // Close the current app instance
-    firebase.app().delete().then(() => {
-        // Re-initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        database = firebase.database();
-        console.log("Firebase reinitialized!");
-    }).catch((error) => {
-        console.error("Error reinitializing Firebase:", error);
-    });
+// Function to reinitialize Firebase with a 2-second delay
+function reinitializeFirebaseWithDelay() {
+    setTimeout(() => {
+        // Close the current app instance
+        firebase.app().delete().then(() => {
+            // Re-initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log("Firebase reinitialized!");
+        }).catch((error) => {
+            console.error("Error reinitializing Firebase:", error);
+        });
+    }, 2000); // 2 seconds delay
 }
 
-// Set an interval to reinitialize Firebase every 30 minutes
-setInterval(reinitializeFirebase, 30 * 60 * 1000);
+// Function to reinitialize Firebase after a 2-second delay when the page regains focus
+let focusTimeout;
+window.addEventListener("focus", () => {
+    clearTimeout(focusTimeout);
+    focusTimeout = setTimeout(reinitializeFirebaseWithDelay, 2000); // 2 seconds delay
+});
 
+// Initial Firebase initialization when the page loads
+reinitializeFirebaseWithDelay();
+
+
+// Function to set up a real-time listener for new laps
+function setupLapListeners(conveyor, lapTimesArray) {
+    let lastLapKey = null;
+
+    // Listen to the specified conveyor path
+    const lapsRef = database.ref(`${conveyor}`);
+
+    lapsRef.once('value', (snapshot) => {
+        const entries = Object.entries(snapshot.val() || {});
+        if (entries.length > 0) {
+            lastLapKey = entries[entries.length - 1][0];  // Store the key of the last lap
+        }
+
+        lapsRef.on('child_added', (childSnapshot) => {
+            if (childSnapshot.key !== lastLapKey) {
+                lastLapKey = childSnapshot.key;  // Update the key of the last lap
+
+                const rawData = childSnapshot.val();
+                const parsedData = JSON.parse(rawData.data);
+                handleNewLap(parsedData, lapTimesArray);
+            }
+        });
+    });
+}
 
 // Listen for online/offline events
 window.addEventListener('online', () => {
@@ -713,19 +747,6 @@ function setupLapListeners(conveyor, lapTimesArray) {
         // Automatically click the "Set Time" button every 1 second
         setInterval(simulateSetTimeButtonClick, 1000);
         
-        // New function to ping Firebase
-        function pingFirebase() {
-            const ref = database.ref('.info/connected');
-            ref.on('value', (snap) => {
-                if (snap.val() === true) {
-                    console.log('Connected to Firebase');
-                } else {
-                    console.log('Disconnected from Firebase');
-                }
-            });
-        }
-        // Ping Firebase every 2.5 minutes (250,000 milliseconds)
-        setInterval(pingFirebase, 250000);
 
         function confirmDeleteLap(conveyor, index) {
     // Show a confirmation dialog
