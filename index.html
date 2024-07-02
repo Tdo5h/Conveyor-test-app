@@ -776,6 +776,9 @@ document.getElementById('recordLap2').addEventListener('click', () => {
                     if (now > fiveFifteenPM) {
                         timeDifferenceRemaining -= 43200; // Subtract 12 hours (43200 seconds)
                     }
+                    if (timeDifferenceRemaining > 43200) {
+                        timeDifferenceRemaining -= 43200; // Subtract 12 hours if over 12 hours
+                    }
                     workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
                     workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
                     displayStats();
