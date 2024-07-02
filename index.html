@@ -263,8 +263,8 @@ button {
 </div>
 <div id="stats" class="content" style="display: flex; justify-content: space-between; width: 100%; height: 100%;">
     <!-- Display statistics here -->
-    <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 3em;"></div>
-    <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 3em;"></div>
+    <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1em;"></div>
+    <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1em;"></div>
 </div>
 
 <div id="clock" class="countdown-timer" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; font-size: 2em; text-align: center;"></div>
@@ -390,8 +390,8 @@ sendDataToFirebase(dataToSend);
         let loadValue2 = 0;
         let conveyor1Units = 9; // Default value for Conveyor 1 units
         let conveyor2Units = 10; // Default value for Conveyor 2 units
-        let conveyor1AvgLaps = 2; // Default value for Conveyor 1 average laps
-        let conveyor2AvgLaps = 2; // Default value for Conveyor 2 average laps
+        let conveyor1AvgLaps = 10; // Default value for Conveyor 1 average laps
+        let conveyor2AvgLaps = 10; // Default value for Conveyor 2 average laps
 
    
 
@@ -804,7 +804,7 @@ document.getElementById('recordLap2').addEventListener('click', () => {
                         const lapData = data[key];
                         lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
                     }
-                    conveyor1AvgLaps = 2; // Start with averaging 2 laps
+                    conveyor1AvgLaps = 10; // Default averaging 10 laps
                     displayStats();
                 }
             });
@@ -818,7 +818,7 @@ document.getElementById('recordLap2').addEventListener('click', () => {
                         const lapData = data[key];
                         lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
                     }
-                    conveyor2AvgLaps = 2; // Start with averaging 2 laps
+                    conveyor2AvgLaps = 10; // Default averaging 10 laps
                     displayStats();
                 }
             });
@@ -910,41 +910,37 @@ document.getElementById('recordLap2').addEventListener('click', () => {
     // Call the displayStats function if it's defined elsewhere in your code
     displayStats();
 
-   
+    // Auto pull 2 laps on page open
+    const lapCount = 2;
 
-    // Auto change the averaging as new laps come in
-    function updateAvgLaps(conveyor, lapTimes) {
-        if (lapTimes.length >= 8) {
-            conveyor === 'conveyor1' ? conveyor1AvgLaps = 10 : conveyor2AvgLaps = 10;
-        } else if (lapTimes.length >= 6) {
-            conveyor === 'conveyor1' ? conveyor1AvgLaps = 8 : conveyor2AvgLaps = 8;
-        } else if (lapTimes.length >= 4) {
-            conveyor === 'conveyor1' ? conveyor1AvgLaps = 6 : conveyor2AvgLaps = 6;
-        } else if (lapTimes.length >= 2) {
-            conveyor === 'conveyor1' ? conveyor1AvgLaps = 4 : conveyor2AvgLaps = 4;
+    // Retrieve the specified number of laps from Firebase for Conveyor 1
+    const lapsRef1 = database.ref('laps/conveyor1').limitToLast(lapCount);
+    lapsRef1.once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            lapTimes1.length = 0; // Clear the existing lap times
+            for (const key in data) {
+                const lapData = data[key];
+                lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
+            }
+            conveyor1AvgLaps = 10; // Default averaging 10 laps
+            displayStats();
         }
-        displayStats();
-    }
-
-    // Monitor changes in lap times and update averaging
-    const lapsRef1Monitor = database.ref('laps/conveyor1');
-    lapsRef1Monitor.on('child_added', (snapshot) => {
-        const lapData = snapshot.val();
-        lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
-        if (lapTimes1.length > 10) {
-            lapTimes1.shift(); // Remove the oldest lap if more than 10 laps
-        }
-        updateAvgLaps('conveyor1', lapTimes1);
     });
 
-    const lapsRef2Monitor = database.ref('laps/conveyor2');
-    lapsRef2Monitor.on('child_added', (snapshot) => {
-        const lapData = snapshot.val();
-        lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
-        if (lapTimes2.length > 10) {
-            lapTimes2.shift(); // Remove the oldest lap if more than 10 laps
+    // Retrieve the specified number of laps from Firebase for Conveyor 2
+    const lapsRef2 = database.ref('laps/conveyor2').limitToLast(lapCount);
+    lapsRef2.once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            lapTimes2.length = 0; // Clear the existing lap times
+            for (const key in data) {
+                const lapData = data[key];
+                lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
+            }
+            conveyor2AvgLaps = 10; // Default averaging 10 laps
+            displayStats();
         }
-        updateAvgLaps('conveyor2', lapTimes2);
     });
 
 });    
