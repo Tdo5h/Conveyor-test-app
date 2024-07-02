@@ -591,7 +591,26 @@ const workToBeDone1_X4 = calculateWorkToBeDone(averageTimeX4_1, timeDifferenceRe
 conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Full Shift Load = ${(twelveHours / averageTime1).toFixed(1)} <span style="margin-left: 40px;">Lifts = ${((twelveHours / averageTime1) * conveyor1Units / 16).toFixed(1)}</span></div>`;
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Shift End Load = ${(timeDifferenceRemaining / averageTime1).toFixed(1)} <span style="margin-left: 40px;">Lifts = ${((timeDifferenceRemaining / averageTime1) * conveyor1Units / 16).toFixed(1)}</span></div>`;
+conveyor1StatsDiv.innerHTML += '<div style="line-height: 1;">&nbsp;</div>';
+// New calculations for 24hr 3 Man Day and 24hr 3 Man Night
+const fullShiftLifts1 = (twelveHours / averageTime1) * conveyor1Units / 16;
+const fullShiftLifts2 = (twelveHours / averageTime2) * conveyor2Units / 16;
+const combinedFullShiftLifts = (fullShiftLifts1 + fullShiftLifts2) * 2 / 3;
+const oneThirdCombinedLifts = combinedFullShiftLifts;
+const conveyor1_24hr3ManNight = oneThirdCombinedLifts;
+const conveyor2_24hr3ManNight = oneThirdCombinedLifts;
 
+const conveyor1_24hr3ManDay = conveyor1_24hr3ManNight - fullShiftLifts1;
+const conveyor2_24hr3ManDay = conveyor2_24hr3ManNight - fullShiftLifts2;
+
+const finalConveyor1_24hr3ManDay = conveyor1_24hr3ManDay < 0 ? fullShiftLifts1 + Math.abs(conveyor1_24hr3ManDay) : fullShiftLifts1 - conveyor1_24hr3ManDay;
+const finalConveyor2_24hr3ManDay = conveyor2_24hr3ManDay < 0 ? fullShiftLifts2 + Math.abs(conveyor2_24hr3ManDay) : fullShiftLifts2 - conveyor2_24hr3ManDay;
+
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day = ${conveyor1_24hr3ManNight.toFixed(1)}</div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night = ${finalConveyor1_24hr3ManDay.toFixed(1)}</div>`;
+
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day = ${conveyor2_24hr3ManNight.toFixed(1)}</div>`;
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night = ${finalConveyor2_24hr3ManDay.toFixed(1)}</div>`;
 
 conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 4x - Load Conveyor 1 = ${(workToBeDone1_X4 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X4 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
 conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 2x - Load Conveyor 1 = ${(workToBeDone1_X2 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X2 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
