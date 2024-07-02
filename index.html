@@ -158,27 +158,27 @@ button {
 }
 
 /* Add more styles as needed for your settings window */
-
     </style>
-</head><div class="content">
-    <h1 id="conveyorCalculator" style="font-size: 2.2rem;">Conveyor Calculator</h1>
+</head>
+<body>
+<div class="content">
+    <h1 id="conveyorCalculator" style="font-size: 2.2rem; display: none;">Conveyor Calculator</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button id="startConveyor2" style="border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px;margin-right: 20px;">START CONVEYOR 2</button>
-        <button id="startConveyor1" style="border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px; margin-left: 20px;">START CONVEYOR 1</button>
+        <button id="startConveyor2" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px;margin-right: 20px;">START CONVEYOR 2</button>
+        <button id="startConveyor1" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px; margin-left: 20px;">START CONVEYOR 1</button>
     </div>
     <div style="display: flex; justify-content: center; margin-top: 20px;">
-        <button id="recordLap2" style="border: 1px solid black; border-radius: 5px; width: 170px; margin-right: 5px; font-size: 20px;">Lap Conveyor 2</button>
-        <button id="recordLap1" style="border: 1px solid black; border-radius: 5px; width: 170px; margin-left: 5px; font-size: 20px;">Lap Conveyor 1</button>
+        <button id="recordLap2" style="display: none; border: 1px solid black; border-radius: 5px; width: 170px; margin-right: 5px; font-size: 20px;">Lap Conveyor 2</button>
+        <button id="recordLap1" style="display: none; border: 1px solid black; border-radius: 5px; width: 170px; margin-left: 5px; font-size: 20px;">Lap Conveyor 1</button>
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
         <div style="display: flex; justify-content: start; width: 100%;">
-            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px;">Settings</button>
+            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px;" onclick="document.getElementById('settingsPopup').style.display='block'">Settings</button>
             <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px;">Pull Laps</button>
         </div>              
-       
     </div>
     
-    <div id="settingsPopup" class="popup">
+    <div id="settingsPopup" class="popup" style="display: none;">
         <div class="popup-content">
             <!-- Add content for the settings window here -->
             <button onclick="openDeleteLapPopup('conveyor2')" style="border: 1px solid black; border-radius: 5px;">Delete Lap Conveyor 2</button>
@@ -199,11 +199,11 @@ button {
                 Subtract Cut Pull conveyor2 =
                 <input type="number" id="subtractLoad2" class="input-small" style="border: 1px solid black; border-radius: 5px;" placeholder="Subtract Load 2">
             </div>
-            
+            <!-- Set Time section hidden -->
             <div class="black" style="margin-top: 20px; display: none;">
                 Set Time
                 <input type="time" id="timeInput" class="input-small" style="border: 1px solid black;margin-top: 10px;color: black; background-color: white;border-radius: 5px; margin-right: 0px; padding: 0;" value="17:15">
-            <button id="setTime" style="border: 1px solid black; display: none; border-radius: 5px; margin-left: 2px;margin-top: 10px; padding: 6;">Set</button>            
+            <button id="setTime" style="border: 1px solid black;border-radius: 5px; margin-left: 2px;margin-top: 10px; padding: 6;">Set</button>            
             </div>
             <div style="border-top: 2px solid black; margin: 10px 0;"></div> <!-- Black line between sections -->
             <!-- New div for setting conveyor units -->
@@ -256,9 +256,8 @@ button {
             <div class="black" style="margin-top: 20px;">
                 <button id="resetLaps" style="border: 1px solid black; border-radius: 5px;">Reset Laps</button>
             </div>
-       
         </div>
-        <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%;">Done</button>
+        <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" onclick="document.getElementById('settingsPopup').style.display='none'">Done</button>
     </div>
 </div>
 <div id="stats" class="content" style="display: flex; justify-content: space-between; width: 100%; height: 100%;">
@@ -947,4 +946,3 @@ document.getElementById('recordLap2').addEventListener('click', () => {
     </script>
 </body>
 </html>
-
