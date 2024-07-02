@@ -606,11 +606,11 @@ const conveyor2_24hr3ManDay = conveyor2_24hr3ManNight - fullShiftLifts2;
 const finalConveyor1_24hr3ManDay = conveyor1_24hr3ManDay < 0 ? fullShiftLifts1 + Math.abs(conveyor1_24hr3ManDay) : fullShiftLifts1 - conveyor1_24hr3ManDay;
 const finalConveyor2_24hr3ManDay = conveyor2_24hr3ManDay < 0 ? fullShiftLifts2 + Math.abs(conveyor2_24hr3ManDay) : fullShiftLifts2 - conveyor2_24hr3ManDay;
 
-conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day = ${conveyor1_24hr3ManNight.toFixed(1)}</div>`;
-conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night = ${finalConveyor1_24hr3ManDay.toFixed(1)}</div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day Lifts = ${conveyor1_24hr3ManNight.toFixed(1)}</div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night Lifts = ${finalConveyor1_24hr3ManDay.toFixed(1)}</div>`;
 
-conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day = ${conveyor2_24hr3ManNight.toFixed(1)}</div>`;
-conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night = ${finalConveyor2_24hr3ManDay.toFixed(1)}</div>`;
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day Lifts = ${conveyor2_24hr3ManNight.toFixed(1)}</div>`;
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night Lifts = ${finalConveyor2_24hr3ManDay.toFixed(1)}</div>`;
 
 conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 4x - Load Conveyor 1 = ${(workToBeDone1_X4 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X4 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
 conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 2x - Load Conveyor 1 = ${(workToBeDone1_X2 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X2 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
@@ -961,6 +961,26 @@ document.getElementById('recordLap2').addEventListener('click', () => {
             conveyor2AvgLaps = 10; // Default averaging 10 laps
             displayStats();
         }
+    });
+
+    // Listen for new laps added to Firebase for Conveyor 1
+    database.ref('laps/conveyor1').on('child_added', (snapshot) => {
+        const lapData = snapshot.val();
+        lapTimes1.push([lapData.lapTime, lapData.timeOfDay]);
+        if (lapTimes1.length > 10) {
+            lapTimes1.shift(); // Remove the oldest lap if more than 10 laps
+        }
+        displayStats();
+    });
+
+    // Listen for new laps added to Firebase for Conveyor 2
+    database.ref('laps/conveyor2').on('child_added', (snapshot) => {
+        const lapData = snapshot.val();
+        lapTimes2.push([lapData.lapTime, lapData.timeOfDay]);
+        if (lapTimes2.length > 10) {
+            lapTimes2.shift(); // Remove the oldest lap if more than 10 laps
+        }
+        displayStats();
     });
 
 });    
