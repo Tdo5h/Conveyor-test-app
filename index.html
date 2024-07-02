@@ -172,9 +172,9 @@ button {
         <button id="recordLap1" style="display: none; border: 1px solid black; border-radius: 5px; width: 170px; margin-left: 5px; font-size: 20px;">Lap Conveyor 1</button>
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
-        <div style="display: flex; justify-content: start; width: 100%;">
-            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px;" onclick="document.getElementById('settingsPopup').style.display='block'">Settings</button>
-            <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px;">Pull Laps</button>
+        <div style="display: flex; justify-content: start; width: 100%; margin-bottom: 0;">
+            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px; position: absolute; top: 0; left: 0;" onclick="document.getElementById('settingsPopup').style.display='block'">Settings</button>
+            <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px; position: absolute; top: 0; right: 0;">Pull Laps</button>
         </div>              
     </div>
     
@@ -500,8 +500,7 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
         const secondsStr = Math.floor(seconds % 60);
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsStr.toString().padStart(2, '0')}`;
     }
-   
-    conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em;">Conveyor 2:  <span style="font-size: 0.5em;">(${conveyor2Units} units)</span></div>`;
+    conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 35px;">Conveyor 2:  <span style="font-size: 0.5em;">(${conveyor2Units} units)</span></div>`;
     conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 const averageTime2 = calculateAverageTimeX(lapTimes2, conveyor2AvgLaps);
 conveyor2StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time: ${formatTime(averageTime2)}</div>`;
@@ -551,7 +550,7 @@ conveyor2StatsDiv.innerHTML += `<div class="green" style="display: none; font-fa
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
-conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em;">Conveyor 1: <span style="font-size: 0.5em;">(${conveyor1Units} units)</span></div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 35px;">Conveyor 1: <span style="font-size: 0.5em;">(${conveyor1Units} units)</span></div>`;
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 const averageTime1 = calculateAverageTimeX(lapTimes1, conveyor1AvgLaps);
 conveyor1StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time : ${formatTime(averageTime1)}</div>`;
