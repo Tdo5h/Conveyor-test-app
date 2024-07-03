@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-   
-    
     <link rel="apple-touch-icon" href="icon.png">
     <title>Conveyor Calculator</title>
     <!-- Apple Touch Icon -->
@@ -20,37 +18,42 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
         }
 
         .popup-content {
-    background-image: url('back2.jpg');
-    background-size: cover;
-    background-repeat: no-repeat; 
-    background-position: bottom right;  /* Adjust this line */
-    max-height: 400px; /* You can adjust this value as per your requirement */
-    overflow-y: auto;
-}
-
-.lap-time {
-    background-color: rgba(0, 0, 0, 0.242); 
-}
-
-.popup-item {
-    font-size: 20px;
-    padding: 8px; /* Adjust the padding size as needed */
-}
-#deleteLapPopup button {
-    font-size: 17px;  /* Adjust as per your need */
-    padding: 7px 12px; /* Vertical and horizontal padding */
-    cursor: pointer; /* To change cursor to hand when hovering */
-    border: 1px solid black;
-    border-radius: 5px;
-}
-
-
-        body {
-            background-color: black;
+            background-image: url('back2.jpg');
+            background-size: cover;
+            background-repeat: no-repeat; 
+            background-position: bottom right;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #333; /* Change popup menu text back to black */
         }
+
+        .lap-time {
+            background-color: rgba(0, 0, 0, 0.242); 
+        }
+
+        .popup-item {
+            font-size: 20px;
+            padding: 8px;
+        }
+
+        #deleteLapPopup button {
+            font-size: 17px;
+            padding: 7px 12px;
+            cursor: pointer;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+        }
+
         body {
             background-image: url('background.jpg');
             background-size: cover;
@@ -58,161 +61,150 @@
             background-attachment: fixed;
             font-weight: bold;
         }
-         .bold { font-weight: bold; }
+
+        .bold { font-weight: bold; }
         .input-small { width: 6rem; }
         .red { color: red; }
         .green { color: green; }
         .blue { color: blue; }
-         .purple { color: purple; }
+        .purple { color: purple; }
         .orange { color: orange; }
+
         .content {
-            background-color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        
-        
-.lap-time {
-    background-color: rgba(0, 0, 0, 0.242); 
-}
-/* Add padding to the pop-up items */
-.popup-item {
-    font-size: 20px;
-    padding: 10px; /* Adjust the padding size as needed */
-}
-        #recordLap1, #recordLap2 {
-            width: auto;
-            height: auto;
-            font-size: 230%;
-        }
-    
 
-        /* Increase the size of Conveyor headers by 50% */
         .conveyor-header {
-        font-size: 180%;
+            font-size: 180%;
+            color: #333;
         }
 
-/* Style for the pop-up window */
-.popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.242); /* Darker background for better readability */
-    z-index: 1;
-    color: rgb(0, 0, 0); /* White text color for better readability */
-    font-size: 1.2em; /* Slightly larger font size for better readability */
-}
-button {
-    color: rgb(0, 0, 0);
-    background-color: white;
-}
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            color: #333; /* Change popup menu text back to black */
+            font-size: 1.2em;
+        }
 
-#countdownDisplay {
-       
-        bottom: 0;         /* Positions it at the bottom of the viewport */
-        left: 0;           /* Aligns it to the left side */
-        width: 100%;       /* Makes it span the full width of the viewport */
-       
-        color: rgb(255, 0, 0);      /* White text color for visibility */
-        text-align: left; /* Center-aligns the text */
-        padding: 10px 0;   /* Adds some vertical padding */
-    }
-   
-    #conveyorCalculator {
-   
-    top: 0;                /* Positions it at the top of the viewport */
-    left: 0;               /* Start from the very left edge of the viewport */
-    width: 100%;           /* Makes it span the full width of the viewport */
-    text-align: center;    /* Center-aligns the text */
-   
-    color: rgb(0, 0, 0);       /* White text color for visibility */
-    padding: 10px 0;       /* Adds some vertical padding */
-    box-sizing: border-box;/* Ensures that padding and border are included in the total width and height */
-    z-index: 1000;         /* Ensures it stays above other elements */
-}
+        button {
+            color: #fff;
+            background-color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
 
+        button:hover {
+            background-color: #555;
+        }
 
+        #countdownDisplay {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: #ff0000;
+            text-align: left;
+            padding: 10px 0;
+        }
 
-.popup-content {
-    background-color: white;
-    width: 80%;
-    max-width: 400px;
-    margin: 20px auto;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    max-height: 90vh; /* Ensure the popup content fits within the viewport height */
-    overflow-y: auto; /* Enable scrolling if content overflows */
-}
+        #conveyorCalculator {
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #333;
+            padding: 10px 0;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
 
-/* Style for the close button */
-#closeSettings {
-    background-color: #ccc;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    float: right;
-}
+        .popup-content {
+            background-color: #fff;
+            width: 80%;
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+            color: #333; /* Change popup menu text back to black */
+        }
 
-/* Add more styles as needed for your settings window */
+        #closeSettings {
+            background-color: #ccc;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            float: right;
+        }
+
+        #closeSettings:hover {
+            background-color: #aaa;
+        }
     </style>
 </head>
 <body>
 <div class="content">
     <h1 id="conveyorCalculator" style="font-size: 2.2rem; display: none;">Conveyor Calculator</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button id="startConveyor2" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px;margin-right: 20px;">START CONVEYOR 2</button>
-        <button id="startConveyor1" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px; margin-left: 20px;">START CONVEYOR 1</button>
+        <button id="startConveyor2" style="display: none; width: 200px; margin-top: 10px; margin-right: 20px;">START CONVEYOR 2</button>
+        <button id="startConveyor1" style="display: none; width: 200px; margin-top: 10px; margin-left: 20px;">START CONVEYOR 1</button>
     </div>
     <div style="display: flex; justify-content: center; margin-top: 20px;">
-        <button id="recordLap2" style="display: none; border: 1px solid black; border-radius: 5px; width: 170px; margin-right: 5px; font-size: 20px;">Lap Conveyor 2</button>
-        <button id="recordLap1" style="display: none; border: 1px solid black; border-radius: 5px; width: 170px; margin-left: 5px; font-size: 20px;">Lap Conveyor 1</button>
+        <button id="recordLap2" style="display: none; width: 170px; margin-right: 5px; font-size: 20px;">Lap Conveyor 2</button>
+        <button id="recordLap1" style="display: none; width: 170px; margin-left: 5px; font-size: 20px;">Lap Conveyor 1</button>
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
         <div style="display: flex; justify-content: start; width: 100%; margin-bottom: 0;">
-            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px; position: absolute; top: 0; left: 0;" onclick="document.getElementById('settingsPopup').style.display='block'">Settings</button>
-            <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px; position: absolute; top: 0; right: 0;">Pull Laps</button>
+            <button id="openSettings" style="margin-right: auto; margin-top: 10px; position: absolute; top: 0; left: 0;" onclick="document.getElementById('settingsPopup').style.display='block'">Settings</button>
+            <button id="pullLaps" style="margin-left: auto; margin-top: 10px; position: absolute; top: 0; right: 0;">Pull Laps</button>
         </div>              
     </div>
     
     <div id="settingsPopup" class="popup" style="display: none;">
         <div class="popup-content">
-            <!-- Add content for the settings window here -->
-            <button onclick="openDeleteLapPopup('conveyor2')" style="border: 1px solid black; border-radius: 5px;">Delete Lap Conveyor 2</button>
-            <button onclick="openDeleteLapPopup('conveyor1')" style="border: 1px solid black; border-radius: 5px;">Delete Lap Conveyor 1</button>
+            <button onclick="openDeleteLapPopup('conveyor2')">Delete Lap Conveyor 2</button>
+            <button onclick="openDeleteLapPopup('conveyor1')">Delete Lap Conveyor 1</button>
             <div id="deleteLapPopup" class="popup">
                 <div class="popup-content2">
                     <h2></h2>
                     <div id="lapList"></div>
-                    <button onclick="closeDeleteLapPopup()" style="border: 1px solid black; border-radius: 5px;">Cancel</button>
+                    <button onclick="closeDeleteLapPopup()">Cancel</button>
                 </div>
             </div>
-            <div style="border-top: 2px solid black; margin: 10px 0;"></div> <!-- Black line between sections -->
+            <div style="border-top: 2px solid #333; margin: 10px 0;"></div>
             <div class="black" style="margin-top: 20px;">
                 Subtract Cut Pull conveyor1 =
-                <input type="number" id="subtractLoad1" class="input-small" style="border: 1px solid black; border-radius: 5px;" placeholder="Subtract Load 1">
+                <input type="number" id="subtractLoad1" class="input-small" style="border: 1px solid #333; border-radius: 5px;" placeholder="Subtract Load 1">
             </div>
             <div class="black" style="margin-top: 10px;">
                 Subtract Cut Pull conveyor2 =
-                <input type="number" id="subtractLoad2" class="input-small" style="border: 1px solid black; border-radius: 5px;" placeholder="Subtract Load 2">
+                <input type="number" id="subtractLoad2" class="input-small" style="border: 1px solid #333; border-radius: 5px;" placeholder="Subtract Load 2">
             </div>
-            <!-- Set Time section hidden -->
             <div class="black" style="margin-top: 20px; display: none;">
                 Set Time
-                <input type="time" id="timeInput" class="input-small" style="border: 1px solid black;margin-top: 10px;color: black; background-color: white;border-radius: 5px; margin-right: 0px; padding: 0;" value="17:15">
-            <button id="setTime" style="border: 1px solid black;border-radius: 5px; margin-left: 2px;margin-top: 10px; padding: 6;">Set</button>            
+                <input type="time" id="timeInput" class="input-small" style="border: 1px solid #333; margin-top: 10px; color: #333; background-color: #fff; border-radius: 5px; margin-right: 0px; padding: 0;" value="17:15">
+                <button id="setTime" style="border-radius: 5px; margin-left: 2px; margin-top: 10px; padding: 6;">Set</button>            
             </div>
-            <div style="border-top: 2px solid black; margin: 10px 0;"></div> <!-- Black line between sections -->
-            <!-- New div for setting conveyor units -->
+            <div style="border-top: 2px solid #333; margin: 10px 0;"></div>
             <div class="black" style="margin-top: 20px; font-size: 1.1em;">
                 <div>Set Conveyor Units</div>
             </div>
             <div class="black" style="margin-top: 10px; font-size: 1.1em;">
                 <label for="conveyor1Units">Conveyor 1 Units:</label>
-                <select id="conveyor1Units" class="input-small" style="border: 1px solid black; border-radius: 5px; margin-top: 10px;">
+                <select id="conveyor1Units" class="input-small" style="border: 1px solid #333; border-radius: 5px; margin-top: 10px;">
                     <option value="9" selected>9</option>
                     <option value="8">8</option>
                     <option value="10">10</option>
@@ -220,20 +212,19 @@ button {
             </div>
             <div class="black" style="margin-top: 10px; font-size: 1.1em;">
                 <label for="conveyor2Units">Conveyor 2 Units:</label>
-                <select id="conveyor2Units" class="input-small" style="border: 1px solid black; border-radius: 5px; margin-top: 10px;">
+                <select id="conveyor2Units" class="input-small" style="border: 1px solid #333; border-radius: 5px; margin-top: 10px;">
                     <option value="10" selected>10</option>
                     <option value="8">8</option>
                     <option value="9">9</option>
                 </select>
             </div>
-            <div style="border-top: 2px solid black; margin: 10px 0;"></div> <!-- Black line between sections -->
-            <!-- New div for setting average laps -->
+            <div style="border-top: 2px solid #333; margin: 10px 0;"></div>
             <div class="black" style="margin-top: 20px; font-size: 1.1em;">
                 <div>Set Average Laps</div>
             </div>
             <div class="black" style="margin-top: 10px;">
                 <label for="conveyor1AvgLaps">Conveyor 1 Avg Laps:</label>
-                <select id="conveyor1AvgLaps" class="input-small" style="border: 1px solid black; border-radius: 5px; margin-top: 10px;">
+                <select id="conveyor1AvgLaps" class="input-small" style="border: 1px solid #333; border-radius: 5px; margin-top: 10px;">
                     <option value="2">2</option>
                     <option value="4">4</option>
                     <option value="6">6</option>
@@ -243,7 +234,7 @@ button {
             </div>
             <div class="black" style="margin-top: 10px;">
                 <label for="conveyor2AvgLaps">Conveyor 2 Avg Laps:</label>
-                <select id="conveyor2AvgLaps" class="input-small" style="border: 1px solid black; border-radius: 5px; margin-top: 10px;">
+                <select id="conveyor2AvgLaps" class="input-small" style="border: 1px solid #333; border-radius: 5px; margin-top: 10px;">
                     <option value="2">2</option>
                     <option value="4">4</option>
                     <option value="6">6</option>
@@ -251,23 +242,20 @@ button {
                     <option value="10" selected>10</option>
                 </select>
             </div>
-            <div style="border-top: 2px solid black; margin: 10px 0;"></div> <!-- Black line between sections -->
-            <!-- New button to reset laps -->
+            <div style="border-top: 2px solid #333; margin: 10px 0;"></div>
             <div class="black" style="margin-top: 20px;">
-                <button id="resetLaps" style="border: 1px solid black; border-radius: 5px;">Reset Laps</button>
+                <button id="resetLaps">Reset Laps</button>
             </div>
         </div>
-        <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" onclick="document.getElementById('settingsPopup').style.display='none'">Done</button>
+        <button id="closeSettings" style="border-radius: 10px; background-color: #fff; color: #333; padding: 10px 20px; font-size: 16px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" onclick="document.getElementById('settingsPopup').style.display='none'">Done</button>
     </div>
 </div>
 <div id="stats" class="content" style="display: flex; justify-content: space-between; width: 100%; height: 100%;">
-    <!-- Display statistics here -->
     <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
 </div>
 
 <div id="clock" class="countdown-timer" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; font-size: 2em; text-align: center;"></div>
-
 
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database-compat.js"></script>
@@ -500,7 +488,7 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
         const secondsStr = Math.floor(seconds % 60);
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsStr.toString().padStart(2, '0')}`;
     }
-    conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 35px;">Conveyor 2:  <span style="font-size: 0.5em;">(${conveyor2Units} units)</span></div>`;
+    conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 50px;">Conveyor 2:  <span style="font-size: 0.5em;">(${conveyor2Units} units)</span></div>`;
     conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 const averageTime2 = calculateAverageTimeX(lapTimes2, conveyor2AvgLaps);
 conveyor2StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time: ${formatTime(averageTime2)}</div>`;
@@ -550,7 +538,7 @@ conveyor2StatsDiv.innerHTML += `<div class="green" style="display: none; font-fa
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
-conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 35px;">Conveyor 1: <span style="font-size: 0.5em;">(${conveyor1Units} units)</span></div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 50px;">Conveyor 1: <span style="font-size: 0.5em;">(${conveyor1Units} units)</span></div>`;
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 const averageTime1 = calculateAverageTimeX(lapTimes1, conveyor1AvgLaps);
 conveyor1StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time : ${formatTime(averageTime1)}</div>`;
@@ -614,11 +602,11 @@ const adjustedConveyor2_24hr3ManNight = conveyor2_24hr3ManNight - overflow2;
 const adjustedConveyor1_24hr3ManDay = overflow2 > 0 ? finalConveyor1_24hr3ManDay - overflow2 : finalConveyor1_24hr3ManDay;
 const adjustedConveyor2_24hr3ManDay = overflow1 > 0 ? finalConveyor2_24hr3ManDay - overflow1 : finalConveyor2_24hr3ManDay;
 
-conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.10em; position: fixed; bottom: 80px;">2 Man Day Lifts = ${adjustedConveyor1_24hr3ManNight.toFixed(1)}${overflow1 > 0 ? ` <span class="red">(cut other = ${overflow1.toFixed(1)})</span>` : ''}</div>`;
-conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.10em; position: fixed; bottom: 40px;">1 Man Night Lifts = ${overflow1 > 0 ? '0.0' : adjustedConveyor1_24hr3ManDay.toFixed(1)}</div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 90px;">2 Man Day Lifts = ${adjustedConveyor1_24hr3ManNight.toFixed(1)}${overflow1 > 0 ? ` <span class="red">(cut other = ${overflow1.toFixed(1)})</span>` : ''}</div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 60px;">1 Man Night Lifts = ${overflow1 > 0 ? '0.0' : adjustedConveyor1_24hr3ManDay.toFixed(1)}</div>`;
 
-conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 80px;">2 Man Day Lifts = ${adjustedConveyor2_24hr3ManNight.toFixed(1)}${overflow2 > 0 ? ` <span class="red">(cut other = ${overflow2.toFixed(1)})</span>` : ''}</div>`;
-conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 40px;">1 Man Night Lifts = ${overflow2 > 0 ? '0.0' : adjustedConveyor2_24hr3ManDay.toFixed(1)}</div>`;
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 90px;">2 Man Day Lifts = ${adjustedConveyor2_24hr3ManNight.toFixed(1)}${overflow2 > 0 ? ` <span class="red">(cut other = ${overflow2.toFixed(1)})</span>` : ''}</div>`;
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 60px;">1 Man Night Lifts = ${overflow2 > 0 ? '0.0' : adjustedConveyor2_24hr3ManDay.toFixed(1)}</div>`;
 // conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Overflow = ${overflow1.toFixed(1)}</div>`;
 // conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Overflow = ${overflow2.toFixed(1)}</div>`;
 conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 4x - Load Conveyor 1 = ${(workToBeDone1_X4 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X4 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
