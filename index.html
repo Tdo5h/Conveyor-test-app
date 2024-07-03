@@ -978,6 +978,10 @@ document.getElementById('recordLap2').addEventListener('click', () => {
         if (lapTimes1.length > 10) {
             lapTimes1.shift(); // Remove the oldest lap if more than 10 laps
         }
+        // Start conveyor 1 and restart the current lap timer
+        lapStart1 = Date.now();
+        running1 = true;
+        document.getElementById('startConveyor1').textContent = "STOP CONVEYOR 1";
         displayStats();
     });
 
@@ -988,6 +992,10 @@ document.getElementById('recordLap2').addEventListener('click', () => {
         if (lapTimes2.length > 10) {
             lapTimes2.shift(); // Remove the oldest lap if more than 10 laps
         }
+        // Start conveyor 2 and restart the current lap timer
+        lapStart2 = Date.now();
+        running2 = true;
+        document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
         displayStats();
     });
 
