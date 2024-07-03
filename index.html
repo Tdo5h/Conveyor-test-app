@@ -599,26 +599,34 @@ const combinedFullShiftLifts = (fullShiftLifts1 + fullShiftLifts2) * 2 / 3;
 const oneThirdCombinedLifts = combinedFullShiftLifts;
 const conveyor1_24hr3ManNight = oneThirdCombinedLifts;
 const conveyor2_24hr3ManNight = oneThirdCombinedLifts;
-
 const conveyor1_24hr3ManDay = conveyor1_24hr3ManNight - fullShiftLifts1;
 const conveyor2_24hr3ManDay = conveyor2_24hr3ManNight - fullShiftLifts2;
 
 const finalConveyor1_24hr3ManDay = conveyor1_24hr3ManDay < 0 ? fullShiftLifts1 + Math.abs(conveyor1_24hr3ManDay) : fullShiftLifts1 - conveyor1_24hr3ManDay;
 const finalConveyor2_24hr3ManDay = conveyor2_24hr3ManDay < 0 ? fullShiftLifts2 + Math.abs(conveyor2_24hr3ManDay) : fullShiftLifts2 - conveyor2_24hr3ManDay;
 
-conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day Lifts = ${conveyor1_24hr3ManNight.toFixed(1)}</div>`;
-conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night Lifts = ${finalConveyor1_24hr3ManDay.toFixed(1)}</div>`;
+const overflow1 = finalConveyor1_24hr3ManDay < 0 ? Math.abs(finalConveyor1_24hr3ManDay) : 0;
+const overflow2 = finalConveyor2_24hr3ManDay < 0 ? Math.abs(finalConveyor2_24hr3ManDay) : 0;
 
-conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Day Lifts = ${conveyor2_24hr3ManNight.toFixed(1)}</div>`;
-conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">3 Man Night Lifts = ${finalConveyor2_24hr3ManDay.toFixed(1)}</div>`;
+const adjustedConveyor1_24hr3ManNight = conveyor1_24hr3ManNight - overflow1;
+const adjustedConveyor2_24hr3ManNight = conveyor2_24hr3ManNight - overflow2;
 
+const adjustedConveyor1_24hr3ManDay = overflow2 > 0 ? finalConveyor1_24hr3ManDay - overflow2 : finalConveyor1_24hr3ManDay;
+const adjustedConveyor2_24hr3ManDay = overflow1 > 0 ? finalConveyor2_24hr3ManDay - overflow1 : finalConveyor2_24hr3ManDay;
+
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 120px;">2 Man Day Lifts = ${adjustedConveyor1_24hr3ManNight.toFixed(1)}${overflow1 > 0 ? ` <span class="red">(cut other = ${overflow1.toFixed(1)})</span>` : ''}</div>`;
+conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 90px;">1 Man Night Lifts = ${overflow1 > 0 ? '0.0' : adjustedConveyor1_24hr3ManDay.toFixed(1)}</div>`;
+
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 60px;">2 Man Day Lifts = ${adjustedConveyor2_24hr3ManNight.toFixed(1)}${overflow2 > 0 ? ` <span class="red">(cut other = ${overflow2.toFixed(1)})</span>` : ''}</div>`;
+conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em; position: fixed; bottom: 30px;">1 Man Night Lifts = ${overflow2 > 0 ? '0.0' : adjustedConveyor2_24hr3ManDay.toFixed(1)}</div>`;
+// conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Overflow = ${overflow1.toFixed(1)}</div>`;
+// conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Overflow = ${overflow2.toFixed(1)}</div>`;
 conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 4x - Load Conveyor 1 = ${(workToBeDone1_X4 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X4 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
 conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 2x - Load Conveyor 1 = ${(workToBeDone1_X2 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X2 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 1;">&nbsp;</div>';
 
 if (timeDifferenceRemaining > 0) {
     conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
-    
 }
 
 }
