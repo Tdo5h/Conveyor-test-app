@@ -256,60 +256,8 @@ button {
             <div class="black" style="margin-top: 20px;">
                 <button id="resetLaps" style="border: 1px solid black; border-radius: 5px;">Reset Laps</button>
             </div>
-            <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; margin-top: 20px;" onclick="document.getElementById('settingsPopup').style.display='none'">Done</button>
         </div>
-    </div>
-</div>
-<div id="stats" class="content" style="display: flex; justify-content: space-between; width: 100%; height: 100%;">
-    <!-- Display statistics here -->
-    <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
-    <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
-</div>
-
-<div id="clock" class="countdown-timer" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; font-size: 2em; text-align: center;"></div>
-
-
-    <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database-compat.js"></script>
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAdX_RAPVeG-uekG-lG1nhSFzZkTMRgg0c",
-            authDomain: "conveyor-laps.firebaseapp.com",
-            databaseURL: "https://conveyor-laps-default-rtdb.firebaseio.com",
-            projectId: "conveyor-laps",
-            storageBucket: "conveyor-laps.appspot.com",
-            messagingSenderId: "708197721355",
-            appId: "1:708197721355:web:234d1d9223b125a657ee0e",
-            measurementId: "G-X2REH4L1M5"
-        };
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-let database = firebase.database();
-
-let isOnline = true; // Track online/offline status
-let pendingDataToSend = []; // Array to store data when offline
-const localLapList = [/* array of laps */];  // Example local lap list
-
-// Reinitialize Firebase and send any pending data 2 seconds after screen focus
-window.addEventListener('focus', () => {
-    setTimeout(() => {
-        reinitializeFirebase();
-    }, 2500); // 2.5 seconds
-});
-
-function sendDataToFirebase(data, callback) {
-    if (isOnline) {
-        database.ref('your_data_path').push(data, (error) => {
-            if (error) {
-                // Data transmission failed, store it for future attempts
-                pendingDataToSend.push(data);
-            } else {
-                console.log('Data sent to Firebase.');
-                if (callback) callback(); // Invoke the callback upon successful transmission
-// ...
-
+        <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" onclick="document.getElementById('settingsPopup').style.display='none'">Done</button>
     </div>
 </div>
 <div id="stats" class="content" style="display: flex; justify-content: space-between; width: 100%; height: 100%;">
@@ -1059,7 +1007,67 @@ document.getElementById('recordLap2').addEventListener('click', () => {
         displayStats();
     });
 
+    // Function to pull and display laps from Boron
+    function pullAndDisplay(conveyor, lapTimesArray, count) {
+        // Adjust reference based on the conveyor name
+        const boronRefName = conveyor === 'conveyor1' ? 'conveyor1Boron' : 'conveyor2Boron';
+        const lapsRef = database.ref(boronRefName).limitToLast(count);
+
+        lapsRef.once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                lapTimesArray.length = 0; // Clear the existing lap times
+                
+                for (const key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        const entryData = data[key].data;
+                        if (entryData) {
+                            const parsedData = JSON.parse(entryData);  // Parse the stringified JSON
+                            lapTimesArray.push([parsedData.lapTime, parsedData.timeOfDay]);
+                        }
+                    }
+                }
+                displayStats();
+            }
+        });
+    }
+
+    function handleNewLap(lapData, lapTimes) {
+        const newLap = [lapData.lapTime, lapData.timeOfDay];
+        lapTimes.push(newLap);
+        displayStats();
+    }
+
+    // Setup listeners for both conveyors
+    setupLapListeners('conveyor1Boron', lapTimes1);
+    setupLapListeners('conveyor2Boron', lapTimes2);
+
+    function setupLapListeners(conveyor, lapTimesArray) {
+        let lastLapKey = null;
+
+        // Listen to conveyor1Boron and conveyor2Boron paths
+        const lapsRef = database.ref(`${conveyor}`).limitToLast(1);
+        
+        lapsRef.once('value', (snapshot) => {
+            const entries = Object.entries(snapshot.val() || {});
+            if (entries.length > 0) {
+                lastLapKey = entries[0][0];  // Store the key of the last lap
+            }
+
+            lapsRef.on('child_added', (childSnapshot) => {
+                if (childSnapshot.key !== lastLapKey) {
+                    lastLapKey = childSnapshot.key;  // Update the key of the last lap
+                    
+                    const rawData = childSnapshot.val();
+                    const parsedData = JSON.parse(rawData.data);
+                    handleNewLap(parsedData, lapTimesArray);
+                }
+            });
+        });
+    }
+
 });    
     </script>
 </body>
 </html>
+
