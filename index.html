@@ -256,8 +256,10 @@ button {
             <div class="black" style="margin-top: 20px;">
                 <button id="resetLaps" style="border: 1px solid black; border-radius: 5px;">Reset Laps</button>
             </div>
+            <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; margin-top: 20px;" onclick="document.getElementById('settingsPopup').style.display='none'">Done</button>
         </div>
-        <button id="closeSettings" style="border: 1px solid black; border-radius: 10px; background-color: white; color: black; padding: 10px 20px; font-size: 16px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" onclick="document.getElementById('settingsPopup').style.display='none'">Done</button>
+   
+
     </div>
 </div>
 <div id="stats" class="content" style="display: flex; justify-content: space-between; width: 100%; height: 100%;">
@@ -824,6 +826,7 @@ document.getElementById('recordLap2').addEventListener('click', () => {
         if (!isNaN(lapCount) && lapCount > 0) {
             // Retrieve the specified number of laps from Firebase for Conveyor 1
             pullAndDisplay('conveyor1', lapTimes1, lapCount);
+            // Retrieve the specified number of laps from Firebase for Conveyor 2
             pullAndDisplay('conveyor2', lapTimes2, lapCount);
         } else {
             alert("Please enter a valid number of laps greater than 0.");
@@ -918,6 +921,8 @@ document.getElementById('recordLap2').addEventListener('click', () => {
 
     // Retrieve the specified number of laps from Firebase for Conveyor 1
     pullAndDisplay('conveyor1', lapTimes1, lapCount);
+
+    // Retrieve the specified number of laps from Firebase for Conveyor 2
     pullAndDisplay('conveyor2', lapTimes2, lapCount);
 
     // Setup listeners for both conveyors
@@ -940,28 +945,39 @@ function pullAndDisplay(conveyor, lapTimesArray, count) {
                 if (data.hasOwnProperty(key)) {
                     const entryData = data[key].data;
                     if (entryData) {
-                        const parsedData = JSON.parse(entryData);  // Parse the stringified JSON
-                        lapTimesArray.push([parsedData.lapTime, parsedData.timeOfDay]);
+                        try {
+                            const parsedData = JSON.parse(entryData);  // Parse the stringified JSON
+                            if (parsedData.lapTime && parsedData.timeOfDay) {
+                                lapTimesArray.push([parsedData.lapTime, parsedData.timeOfDay]);
+                            } else {
+                                console.error('Parsed data is missing lapTime or timeOfDay:', parsedData);
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse entry data:', entryData, e);
+                        }
+                    } else {
+                        console.error('Entry data is undefined or null:', entryData);
                     }
                 }
             }
             displayStats();
+        } else {
+            console.error('No data found in snapshot.');
         }
     });
 }
 
-function handleNewLap(lapData, lapTimes, conveyor) {
-    const newLap = [lapData.lapTime, lapData.timeOfDay];
-    lapTimes.push(newLap);
-    displayStats();
-
-    // Restart the current lap time timer for the conveyor the new lap came in to
-    if (conveyor === 'conveyor1Boron') {
-        lapStart1 = Date.now();
-        running1 = true;
-    } else if (conveyor === 'conveyor2Boron') {
-        lapStart2 = Date.now();
-        running2 = true;
+function handleNewLap(lapData, lapTimes) {
+    try {
+        const newLap = [lapData.lapTime, lapData.timeOfDay];
+        if (newLap[0] && newLap[1]) {
+            lapTimes.push(newLap);
+            displayStats();
+        } else {
+            console.error('Lap data is missing lapTime or timeOfDay:', lapData);
+        }
+    } catch (e) {
+        console.error('Failed to handle new lap data:', lapData, e);
     }
 }
 
@@ -982,8 +998,12 @@ function setupLapListeners(conveyor, lapTimesArray) {
                 lastLapKey = childSnapshot.key;  // Update the key of the last lap
                 
                 const rawData = childSnapshot.val();
-                const parsedData = JSON.parse(rawData.data);
-                handleNewLap(parsedData, lapTimesArray, conveyor);
+                try {
+                    const parsedData = JSON.parse(rawData.data);
+                    handleNewLap(parsedData, lapTimesArray);
+                } catch (e) {
+                    console.error('Failed to parse raw data:', rawData, e);
+                }
             }
         });
     });
