@@ -916,14 +916,24 @@ document.getElementById('recordLap2').addEventListener('click', () => {
     // Call the displayStats function if it's defined elsewhere in your code
     displayStats();
 
-    // Auto pull 2 laps on page open
-    const lapCount = 10;
+    // Auto pull 1 lap on page open and start conveyors
+    const lapCount = 1;
 
     // Retrieve the specified number of laps from Firebase for Conveyor 1
-    pullAndDisplay('conveyor1', lapTimes1, lapCount);
+    pullAndDisplay('conveyor1', lapTimes1, lapCount, () => {
+        lapStart1 = Date.now();
+        running1 = true;
+        document.getElementById('startConveyor1').textContent = "STOP CONVEYOR 1";
+        displayStats();
+    });
 
     // Retrieve the specified number of laps from Firebase for Conveyor 2
-    pullAndDisplay('conveyor2', lapTimes2, lapCount);
+    pullAndDisplay('conveyor2', lapTimes2, lapCount, () => {
+        lapStart2 = Date.now();
+        running2 = true;
+        document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
+        displayStats();
+    });
 
     // Setup listeners for both conveyors
     setupLapListeners('conveyor1Boron', lapTimes1);
@@ -931,7 +941,7 @@ document.getElementById('recordLap2').addEventListener('click', () => {
 
 });    
 
-function pullAndDisplay(conveyor, lapTimesArray, count) {
+function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
     // Adjust reference based on the conveyor name
     const boronRefName = conveyor === 'conveyor1' ? 'conveyor1Boron' : 'conveyor2Boron';
     const lapsRef = database.ref(boronRefName).limitToLast(count);
@@ -961,6 +971,7 @@ function pullAndDisplay(conveyor, lapTimesArray, count) {
                 }
             }
             displayStats();
+            if (callback) callback(); // Call the callback function if provided
         } else {
             console.error('No data found in snapshot.');
         }
