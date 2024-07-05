@@ -950,10 +950,19 @@ function pullAndDisplay(conveyor, lapTimesArray, count) {
     });
 }
 
-function handleNewLap(lapData, lapTimes) {
+function handleNewLap(lapData, lapTimes, conveyor) {
     const newLap = [lapData.lapTime, lapData.timeOfDay];
     lapTimes.push(newLap);
     displayStats();
+
+    // Restart the current lap time timer for the conveyor the new lap came in to
+    if (conveyor === 'conveyor1Boron') {
+        lapStart1 = Date.now();
+        running1 = true;
+    } else if (conveyor === 'conveyor2Boron') {
+        lapStart2 = Date.now();
+        running2 = true;
+    }
 }
 
 function setupLapListeners(conveyor, lapTimesArray) {
@@ -974,7 +983,7 @@ function setupLapListeners(conveyor, lapTimesArray) {
                 
                 const rawData = childSnapshot.val();
                 const parsedData = JSON.parse(rawData.data);
-                handleNewLap(parsedData, lapTimesArray);
+                handleNewLap(parsedData, lapTimesArray, conveyor);
             }
         });
     });
@@ -982,4 +991,3 @@ function setupLapListeners(conveyor, lapTimesArray) {
     </script>
 </body>
 </html>
-
