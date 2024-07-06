@@ -508,15 +508,41 @@ const averageTime2 = calculateAverageTimeX(lapTimes2, conveyor2AvgLaps);
 conveyor2StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time: ${formatTime(averageTime2)}</div>`;
 conveyor2StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Average Last 4 Laps: ${formatTime(calculateAverageTimeX(lapTimes2, 4))}</div>`;
 conveyor2StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Average Last 2 Laps: ${formatTime(calculateAverageTimeX(lapTimes2, 2))}</div>`;
-
 if (running2) {
+    const lastLapTime2 = lapTimes2.length > 0 ? Math.floor(lapTimes2[lapTimes2.length - 1][0] / 1000) : 0;
     const runningTime2 = Math.floor((Date.now() - lapStart2) / 1000);
-    conveyor2StatsDiv.innerHTML += `<div class="blue bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${formatTime(runningTime2)}</div>`;
-    const estimatedNextPull2 = averageTime2 - runningTime2;
+    const estimatedNextPull2 = lastLapTime2 - runningTime2;
+
+    if (estimatedNextPull2 > 0) {
+        conveyor2StatsDiv.innerHTML += `<div class="blue bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${formatTime(runningTime2)}</div>`;
+        conveyor2StatsDiv.innerHTML += `<div id="estimatedNextPull2" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: ${formatTime(estimatedNextPull2)}</div>`;
+    } else {
+        const countUpTime = Math.abs(estimatedNextPull2);
+        conveyor2StatsDiv.innerHTML += `<div class="blue bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${formatTime(runningTime2)}</div>`;
+        conveyor2StatsDiv.innerHTML += `<div id="estimatedNextPull2" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: <span class="red">+${formatTime(countUpTime + averageTime2)} (late)</span></div>`;
+        if (countUpTime > averageTime2 * 2) {
+            conveyor2StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(stock off?)</div>`;
+        }
+        if (countUpTime > 43200) {
+            conveyor2StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(shut)</div>`;
+        }
+    }
+} else {
+    // Calculate estimated next pull based on the newest lap and average lap time
+    const newestLapTime2 = lapTimes2.length > 0 ? Math.floor(lapTimes2[lapTimes2.length - 1][0] / 1000) : 0;
+    const estimatedNextPull2 = newestLapTime2 + averageTime2 - Math.floor((Date.now() - lapStart2) / 1000);
+
     if (estimatedNextPull2 > 0) {
         conveyor2StatsDiv.innerHTML += `<div id="estimatedNextPull2" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: ${formatTime(estimatedNextPull2)}</div>`;
     } else {
-        conveyor2StatsDiv.innerHTML += `<div id="estimatedNextPull2" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: <span class="red">-${formatTime(Math.abs(estimatedNextPull2))}</span></div>`;
+        const countUpTime = Math.abs(estimatedNextPull2);
+        conveyor2StatsDiv.innerHTML += `<div id="estimatedNextPull2" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: <span class="red">+${formatTime(countUpTime + averageTime2)} (late)</span></div>`;
+        if (countUpTime > averageTime2 * 2) {
+            conveyor2StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(stock off?)</div>`;
+        }
+        if (countUpTime > 43200) {
+            conveyor2StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(shut)</div>`;
+        }
     }
 }
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
@@ -561,13 +587,40 @@ conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-fa
 conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Average Last 2 Laps: ${formatTime(calculateAverageTimeX(lapTimes1, 2))}</div>`;
 
 if (running1) {
+    const lastLapTime1 = lapTimes1.length > 0 ? Math.floor(lapTimes1[lapTimes1.length - 1][0] / 1000) : 0;
     const runningTime1 = Math.floor((Date.now() - lapStart1) / 1000);
-    conveyor1StatsDiv.innerHTML += `<div class="blue bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${formatTime(runningTime1)}</div>`;
-    const estimatedNextPull1 = averageTime1 - runningTime1;
+    const estimatedNextPull1 = lastLapTime1 - runningTime1;
+
+    if (estimatedNextPull1 > 0) {
+        conveyor1StatsDiv.innerHTML += `<div class="blue bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${formatTime(runningTime1)}</div>`;
+        conveyor1StatsDiv.innerHTML += `<div id="estimatedNextPull1" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: ${formatTime(estimatedNextPull1)}</div>`;
+    } else {
+        const countUpTime = Math.abs(estimatedNextPull1);
+        conveyor1StatsDiv.innerHTML += `<div class="blue bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${formatTime(runningTime1)}</div>`;
+        conveyor1StatsDiv.innerHTML += `<div id="estimatedNextPull1" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: <span class="red">+${formatTime(countUpTime + averageTime1)} (late)</span></div>`;
+        if (countUpTime > averageTime1 * 2) {
+            conveyor1StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(stock off?)</div>`;
+        }
+        if (countUpTime > 43200) {
+            conveyor1StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(shut)</div>`;
+        }
+    }
+} else {
+    // Calculate estimated next pull based on the newest lap and average lap time
+    const newestLapTime1 = lapTimes1.length > 0 ? Math.floor(lapTimes1[lapTimes1.length - 1][0] / 1000) : 0;
+    const estimatedNextPull1 = newestLapTime1 + averageTime1 - Math.floor((Date.now() - lapStart1) / 1000);
+
     if (estimatedNextPull1 > 0) {
         conveyor1StatsDiv.innerHTML += `<div id="estimatedNextPull1" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: ${formatTime(estimatedNextPull1)}</div>`;
     } else {
-        conveyor1StatsDiv.innerHTML += `<div id="estimatedNextPull1" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: <span class="red">-${formatTime(Math.abs(estimatedNextPull1))}</span></div>`;
+        const countUpTime = Math.abs(estimatedNextPull1);
+        conveyor1StatsDiv.innerHTML += `<div id="estimatedNextPull1" class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Estimated Next Pull: <span class="red">+${formatTime(countUpTime + averageTime1)} (late)</span></div>`;
+        if (countUpTime > averageTime1 * 2) {
+            conveyor1StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(stock off?)</div>`;
+        }
+        if (countUpTime > 43200) {
+            conveyor1StatsDiv.innerHTML += `<div class="red bold" style="font-family: Arial, sans-serif; font-size: 1em;">(shut)</div>`;
+        }
     }
 }
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
@@ -960,7 +1013,8 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
                         try {
                             const parsedData = JSON.parse(entryData);  // Parse the stringified JSON
                             if (parsedData.lapTime && parsedData.timeOfDay) {
-                                lapTimesArray.push([parsedData.lapTime, parsedData.timeOfDay]);
+                                const lapTimeInSeconds = convertLapTimeToSeconds(parsedData.lapTime);
+                                lapTimesArray.push([lapTimeInSeconds * 1000, parsedData.timeOfDay]);
                             } else {
                                 console.error('Parsed data is missing lapTime or timeOfDay:', parsedData);
                             }
@@ -982,7 +1036,8 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
 
 function handleNewLap(lapData, lapTimes) {
     try {
-        const newLap = [lapData.lapTime, lapData.timeOfDay];
+        const lapTimeInSeconds = convertLapTimeToSeconds(lapData.lapTime);
+        const newLap = [lapTimeInSeconds * 1000, lapData.timeOfDay];
         const averageTime = calculateAverageTime(lapTimes);
         if (newLap[0] && newLap[1]) {
             if (newLap[0] > 2 * averageTime * 1000) {
@@ -1039,6 +1094,13 @@ function setupLapListeners(conveyor, lapTimesArray) {
         });
     });
 }
+
+function convertLapTimeToSeconds(lapTime) {
+    const [hours, minutes, seconds] = lapTime.split(':').map(Number);
+    return (hours * 3600) + (minutes * 60) + seconds;
+}
     </script>
 </body>
 </html>
+
+
