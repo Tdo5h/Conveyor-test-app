@@ -525,7 +525,8 @@ conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 lapTimes2.slice().reverse().forEach((lapData, idx) => {
     const lapTimeStr = formatTime(Math.floor(lapData[0] / 1000));
     const [date, time] = lapData[1].split(' ');
-    conveyor2StatsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em;">${lapTimes2.length - idx}.(${lapData[1]}) - ${lapTimeStr} </div>`;
+    const isNotAveraged = lapData[2] ? ' <span class="red">(not averaged)</span>' : '';
+    conveyor2StatsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em;">${lapTimes2.length - idx}.(${lapData[1]}) - ${lapTimeStr}${isNotAveraged} </div>`;
 });
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
@@ -575,7 +576,8 @@ conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 lapTimes1.slice().reverse().forEach((lapData, idx) => {
     const lapTimeStr = formatTime(Math.floor(lapData[0] / 1000));
     const [date, time] = lapData[1].split(' ');
-    conveyor1StatsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em;">${lapTimes2.length - idx}.(${lapData[1]}) - ${lapTimeStr} </div>`;
+    const isNotAveraged = lapData[2] ? ' <span class="red">(not averaged)</span>' : '';
+    conveyor1StatsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em;">${lapTimes2.length - idx}.(${lapData[1]}) - ${lapTimeStr}${isNotAveraged} </div>`;
 });
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
@@ -981,9 +983,27 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
 function handleNewLap(lapData, lapTimes) {
     try {
         const newLap = [lapData.lapTime, lapData.timeOfDay];
+        const averageTime = calculateAverageTime(lapTimes);
         if (newLap[0] && newLap[1]) {
-            lapTimes.push(newLap);
+            if (newLap[0] > 2 * averageTime * 1000) {
+                newLap.push(true); // Mark as not averaged
+                lapTimes.push(newLap);
+                const notAveragedLaps = lapTimes.slice(-3).filter(lap => lap[2]);
+                if (notAveragedLaps.length === 3) {
+                    notAveragedLaps.forEach(lap => delete lap[2]); // Remove the not averaged mark
+                }
+            } else {
+                lapTimes.push(newLap);
+            }
             displayStats();
+            // Start the current lap time timer
+            if (lapTimes === lapTimes1) {
+                lapStart1 = Date.now();
+                running1 = true;
+            } else if (lapTimes === lapTimes2) {
+                lapStart2 = Date.now();
+                running2 = true;
+            }
         } else {
             console.error('Lap data is missing lapTime or timeOfDay:', lapData);
         }
