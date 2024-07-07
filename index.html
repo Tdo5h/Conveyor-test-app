@@ -670,29 +670,25 @@ if (timeDifferenceRemaining > 0) {
         }
 
         function calculateAverageTime(lapTimes) {
-            const validLapTimes = lapTimes.filter(lapData => parseTime(lapData[0]) <= 2 * calculateAverageTime(lapTimes));
-            const totalLapTime = validLapTimes.reduce((total, lapData) => total + parseTime(lapData[0]), 0);
-            const numLaps = validLapTimes.length;
+            const totalLapTime = lapTimes.reduce((total, lapData) => total + parseTime(lapData[0]), 0);
+            const numLaps = lapTimes.length;
             return numLaps > 0 ? totalLapTime / numLaps : 0;
         }
 
         function calculateAverageTimeX2(lapTimes) {
-            const validLapTimes = lapTimes.filter(lapData => parseTime(lapData[0]) <= 2 * calculateAverageTime(lapTimes));
-            const lastTwoLaps = validLapTimes.slice(-2);
+            const lastTwoLaps = lapTimes.slice(-2);
             const totalLapTime = lastTwoLaps.reduce((total, lapData) => total + parseTime(lapData[0]), 0);
             return lastTwoLaps.length > 0 ? totalLapTime / lastTwoLaps.length : 0;
         }
 
         function calculateAverageTimeX4(lapTimes) {
-            const validLapTimes = lapTimes.filter(lapData => parseTime(lapData[0]) <= 2 * calculateAverageTime(lapTimes));
-            const lastFourLaps = validLapTimes.slice(-4);
+            const lastFourLaps = lapTimes.slice(-4);
             const totalLapTime = lastFourLaps.reduce((total, lapData) => total + parseTime(lapData[0]), 0);
             return lastFourLaps.length > 0 ? totalLapTime / lastFourLaps.length : 0;
         }
 
         function calculateAverageTimeX(lapTimes, x) {
-            const validLapTimes = lapTimes.filter(lapData => parseTime(lapData[0]) <= 2 * calculateAverageTime(lapTimes));
-            const lastXLaps = validLapTimes.slice(-x);
+            const lastXLaps = lapTimes.slice(-x);
             const totalLapTime = lastXLaps.reduce((total, lapData) => total + parseTime(lapData[0]), 0);
             return lastXLaps.length > 0 ? totalLapTime / lastXLaps.length : 0;
         }
