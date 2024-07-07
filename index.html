@@ -961,6 +961,9 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
                             if (parsedData.lapTime && parsedData.timeOfDay) {
                                 const lapTimeInSeconds = convertLapTimeToSeconds(parsedData.lapTime);
                                 lapTimesArray.push([lapTimeInSeconds * 1000, parsedData.timeOfDay]);
+                                if (lapTimesArray.length > 10) {
+                                    lapTimesArray.shift(); // Remove the oldest lap if more than 10 laps
+                                }
                             } else {
                                 console.error('Parsed data is missing lapTime or timeOfDay:', parsedData);
                             }
@@ -986,15 +989,14 @@ function handleNewLap(lapData, lapTimes) {
         const newLap = [lapTimeInSeconds * 1000, lapData.timeOfDay];
         const averageTime = calculateAverageTime(lapTimes);
         if (newLap[0] && newLap[1]) {
-            if (newLap[0] > 2 * averageTime * 1000) {
-                newLap.push(true); // Mark as not averaged
+            if (newLap[0] >= 2 * averageTime * 1000) {
+                newLap.push('red'); // Mark as red
                 lapTimes.push(newLap);
-                const notAveragedLaps = lapTimes.slice(-3).filter(lap => lap[2]);
-                if (notAveragedLaps.length === 3) {
-                    notAveragedLaps.forEach(lap => delete lap[2]); // Remove the not averaged mark
-                }
             } else {
                 lapTimes.push(newLap);
+            }
+            if (lapTimes.length > 10) {
+                lapTimes.shift(); // Remove the oldest lap if more than 10 laps
             }
             displayStats();
             // Start the current lap time timer
@@ -1011,6 +1013,8 @@ function handleNewLap(lapData, lapTimes) {
     } catch (e) {
         console.error('Failed to handle new lap data:', lapData, e);
     }
+    // Remove red laps from the average calculation
+    lapTimes = lapTimes.filter(lap => !lap.includes('red'));
 }
 
 function setupLapListeners(conveyor, lapTimesArray) {
