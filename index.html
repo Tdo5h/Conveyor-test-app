@@ -111,13 +111,12 @@ button {
 }
 
 #countdownDisplay {
-       
+        position: fixed;   /* Ensure it stays fixed in the viewport */
         bottom: 0;         /* Positions it at the bottom of the viewport */
-        left: 0;           /* Aligns it to the left side */
-        width: 100%;       /* Makes it span the full width of the viewport */
-       
-        color: rgb(255, 0, 0);      /* White text color for visibility */
-        text-align: left; /* Center-aligns the text */
+        left: 33.33%;      /* Aligns it one third in from the left side */
+        width: 33.33%;     /* Makes it span one third of the viewport width */
+        color: rgb(0, 0, 0);      /* Black text color for visibility */
+      
         padding: 10px 0;   /* Adds some vertical padding */
     }
    
@@ -268,7 +267,7 @@ button {
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
 </div>
 
-<div id="clock" class="countdown-timer" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; font-size: 2em; text-align: center;"></div>
+<div id="clock" class="countdown-timer" style="position: fixed; bottom: 0; left: 33.33%; width: 33.33%; font-size: 2em; text-align: center;"></div>
 
 
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app-compat.js"></script>
@@ -630,7 +629,7 @@ conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-fa
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 1;">&nbsp;</div>';
 
 if (timeDifferenceRemaining > 0) {
-    conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
+    conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 20%; width: 28.33%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
 }
 
 }
