@@ -1024,10 +1024,43 @@ function autoPullLapsOnPageOpenAndScreenAwake() {
         document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
         displayStats();
     });
+
+    // Listen for new laps added to Firebase for Conveyor 1
+    listenForNewLaps('conveyor1', lapTimes1);
+
+    // Listen for new laps added to Firebase for Conveyor 2
+    listenForNewLaps('conveyor2', lapTimes2);
 }
 
+function listenForNewLaps(conveyor, lapTimesArray) {
+    const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
+    const lapsRef = database.ref(lapsRefName);
 
-    function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
+    lapsRef.on('child_added', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            try {
+                const entryData = JSON.parse(data.data);
+                if (entryData.lapTime && entryData.timeOfDay) {
+                    // Skip if the lap is in the deleted laps list
+                    if (!deletedLaps[conveyor].some(lap => lap.lapTime === entryData.lapTime && lap.timeOfDay === entryData.timeOfDay)) {
+                        lapTimesArray.push({ lapTime: entryData.lapTime, timeOfDay: entryData.timeOfDay });
+                        if (lapTimesArray.length > 10) {
+                            lapTimesArray.shift(); // Remove the oldest lap if more than 10 laps
+                        }
+                        displayStats();
+                    }
+                } else {
+                    console.error('Entry data is missing lapTime or timeOfDay:', entryData);
+                }
+            } catch (e) {
+                console.error('Error parsing entry data:', data.data, e);
+            }
+        }
+    });
+}
+
+function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
     // Adjust reference based on the conveyor name
     const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
     const lapsRef = database.ref(lapsRefName).limitToLast(count);
