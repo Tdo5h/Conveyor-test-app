@@ -548,7 +548,7 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
     if (lapTimes1.length > 0) {
         const newestLapTime1 = lapTimes1[lapTimes1.length - 1].timeOfDay; // Access the correct property
         console.log('Newest lap time for conveyor1:', newestLapTime1); // Log the newest lap time
-        const timeSinceNewestLap1 = Date.now() - Date.parse(newestLapTime1);
+        const timeSinceNewestLap1 = Date.now() - Date.parse(newestLapTime1) - 3600000;
         if (!isNaN(timeSinceNewestLap1)) {
             statsDiv.innerHTML += `<div class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${new Date(timeSinceNewestLap1).toISOString().substr(11, 8)} </div>`;
             const expectedNextDrag1 = new Date(Date.parse(newestLapTime1) + averageTime1 * 1000);
@@ -619,7 +619,7 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
     if (lapTimes2.length > 0) {
         const newestLapTime2 = lapTimes2[lapTimes2.length - 1].timeOfDay; // Access the correct property
         console.log('Newest lap time for conveyor2:', newestLapTime2); // Log the newest lap time
-        const timeSinceNewestLap2 = Date.now() - Date.parse(newestLapTime2);
+        const timeSinceNewestLap2 = Date.now() - Date.parse(newestLapTime2) - 3600000;
         if (!isNaN(timeSinceNewestLap2)) {
             statsDiv.innerHTML += `<div class="black bold" style="font-family: Arial, sans-serif; font-size: 1em;">Current lap time: ${new Date(timeSinceNewestLap2).toISOString().substr(11, 8)} </div>`;
             const expectedNextDrag2 = new Date(Date.parse(newestLapTime2) + averageTime2 * 1000);
