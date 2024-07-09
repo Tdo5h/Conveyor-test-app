@@ -61,9 +61,9 @@
          .bold { font-weight: bold; }
         .input-small { width: 6rem; }
         .red { color: red; }
-        .green { color: green; }
+        .green { color: rgb(0, 117, 0); }
         .blue { color: blue; }
-         .purple { color: purple; }
+         .purple { color: rgb(109, 0, 109); }
         .orange { color: orange; }
         .content {
             background-color: rgba(255, 255, 255, 0.7);
@@ -234,20 +234,20 @@ button {
                 <label for="conveyor1AvgLaps">Conveyor 1 Avg Laps:</label>
                 <select id="conveyor1AvgLaps" class="input-small" style="border: 1px solid black; border-radius: 5px; margin-top: 10px; color: black;">
                     <option value="2">2</option>
-                    <option value="4">4</option>
+                    <option value="4"selected>4</option>
                     <option value="6">6</option>
                     <option value="8">8</option>
-                    <option value="10" selected>10</option>
+                    <option value="10" >10</option>
                 </select>
             </div>
             <div class="black" style="margin-top: 10px;">
                 <label for="conveyor2AvgLaps">Conveyor 2 Avg Laps:</label>
                 <select id="conveyor2AvgLaps" class="input-small" style="border: 1px solid black; border-radius: 5px; margin-top: 10px; color: black;">
                     <option value="2">2</option>
-                    <option value="4">4</option>
+                    <option value="4"selected>4</option>
                     <option value="6">6</option>
                     <option value="8">8</option>
-                    <option value="10" selected>10</option>
+                    <option value="10" >10</option>
                 </select>
             </div>
             <div style="border-top: 2px solid black; margin: 10px 0;"></div> <!-- Black line between sections -->
@@ -285,21 +285,34 @@ button {
             appId: "1:708197721355:web:234d1d9223b125a657ee0e",
             measurementId: "G-X2REH4L1M5"
         };
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-let database = firebase.database();
+ // Initialize Firebase
+ firebase.initializeApp(firebaseConfig);
+    let database = firebase.database();
 
-let isOnline = true; // Track online/offline status
-let pendingDataToSend = []; // Array to store data when offline
-const localLapList = [/* array of laps */];  // Example local lap list
+    let isOnline = true; // Track online/offline status
+    let pendingDataToSend = []; // Array to store data when offline
+    const localLapList = [/* array of laps */];  // Example local lap list
+    let latestLapTimestamp = null; // Store the timestamp of the latest lap pulled on page load
 
-// Reinitialize Firebase and send any pending data 2 seconds after screen focus
-window.addEventListener('focus', () => {
-    setTimeout(() => {
-        reinitializeFirebase();
-        autoPullLapsOnPageOpenAndScreenAwake();
-    }, 2500); // 2.5 seconds
-});
+    // Reinitialize Firebase and send any pending data 2 seconds after screen focus
+    window.addEventListener('focus', () => {
+        setTimeout(() => {
+            reinitializeFirebase();
+            pullNewerLapsOnScreenWake();
+        }, 2500); // 2.5 seconds
+    });
+
+    // Helper function to validate JSON strings
+    function isValidJSON(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
+
+
 
 function sendDataToFirebase(data, callback) {
     if (isOnline) {
@@ -391,8 +404,8 @@ sendDataToFirebase(dataToSend);
         let loadValue2 = 0;
         let conveyor1Units = 10; // Default value for Conveyor 1 units
         let conveyor2Units = 10; // Default value for Conveyor 2 units
-        let conveyor1AvgLaps = 10; // Default value for Conveyor 1 average laps
-        let conveyor2AvgLaps = 10; // Default value for Conveyor 2 average laps
+        let conveyor1AvgLaps = 4; // Default value for Conveyor 1 average laps
+        let conveyor2AvgLaps = 4; // Default value for Conveyor 2 average laps
 
    
    
@@ -510,7 +523,7 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
         }
         
 
-function displayStats() {
+        function displayStats() {
     const statsDiv = document.getElementById('stats');
     statsDiv.innerHTML = '';
 
@@ -524,11 +537,11 @@ function displayStats() {
     statsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em;">Conveyor 1</div>`;
     statsDiv.innerHTML += `<div style="font-size: 0.9em;">
         (<span style="color: ${conveyor1Units !== 10 ? 'red' : 'black'};">${conveyor1Units} units</span>, 
-        <span style="color: ${conveyor1AvgLaps !== 10 ? 'red' : 'black'};">${conveyor1AvgLaps} avg laps</span>)
+        <span style="color: ${conveyor1AvgLaps !== 10 ? 'black' : 'black'};">${conveyor1AvgLaps} avg laps</span>)
     </div>`;
     statsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
     const averageTime1 = calculateAverageTimeX(lapTimes1, conveyor1AvgLaps);
-    statsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time: ${formatTime(averageTime1)}</div>`;
+    statsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em; color: green; font-weight: bold;">Average Lap Time: ${formatTime(averageTime1)}</div>`;
     statsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
     if (lapTimes1.length > 0) {
         const newestLapTime1 = lapTimes1[lapTimes1.length - 1].timeOfDay; // Access the correct property
@@ -565,7 +578,8 @@ function displayStats() {
         const lapTimeStr = formatTime(Math.floor(lapData.lapTime / 1000));
         const [date, time] = lapData.timeOfDay.split(' ');
         const isVeryLongLap = lapData.lapTime > 2 * averageTime1 * 1000; // Check if lap time is more than 2 times the average
-        statsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em;">${arr.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} ${isVeryLongLap ? '<span style="color: red;">???</span>' : ''}</div>`;
+        const isAveragedLap = idx < conveyor1AvgLaps; // Check if the lap is part of the average calculation
+        statsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em; color: #800080; font-weight: ${isAveragedLap ? 'bold' : 'normal'};">${arr.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} ${isVeryLongLap ? '<span style="color: red;">???</span>' : ''}</div>`;
     });
     statsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
@@ -594,7 +608,7 @@ function displayStats() {
     statsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em;">Conveyor 2</div>`;
     statsDiv.innerHTML += `<div style="font-size: 0.9em;">
         (<span style="color: ${conveyor2Units !== 10 ? 'red' : 'black'};">${conveyor2Units} units</span>, 
-        <span style="color: ${conveyor2AvgLaps !== 10 ? 'red' : 'black'};">${conveyor2AvgLaps} avg laps</span>)
+        <span style="color: ${conveyor2AvgLaps !== 10 ? 'black' : 'black'};">${conveyor2AvgLaps} avg laps</span>)
     </div>`;
     statsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
     const averageTime2 = calculateAverageTimeX(lapTimes2, conveyor2AvgLaps);
@@ -634,7 +648,8 @@ function displayStats() {
         const lapTimeStr = formatTime(Math.floor(lapData.lapTime / 1000));
         const [date, time] = lapData.timeOfDay.split(' ');
         const isVeryLongLap = lapData.lapTime > 2 * averageTime2 * 1000; // Check if lap time is more than 2 times the average
-        statsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em;">${arr.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} ${isVeryLongLap ? '<span style="color: red;">???</span>' : ''}</div>`;
+        const isAveragedLap = idx < conveyor2AvgLaps; // Check if the lap is part of the average calculation
+        statsDiv.innerHTML += `<div class="purple" style="font-family: Arial, sans-serif; font-size: 1em; color: #800080; font-weight: ${isAveragedLap ? 'bold' : 'normal'};">${arr.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} ${isVeryLongLap ? '<span style="color: red;">???</span>' : ''}</div>`;
     });
     statsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
@@ -1006,100 +1021,118 @@ document.getElementById('recordLap2').addEventListener('click', () => {
     });
 });    
 
-function autoPullLapsOnPageOpenAndScreenAwake() {
-    const lapCount = 4;
+let pageLoadTimestamp = Date.now(); // Set a timestamp when the page loads
+    let initialLapsPulled = false; // Flag to track if initial laps have been pulled
+    let oldestAllowedTimestamp = null; // Timestamp of the 4th oldest lap
 
-    // Retrieve the specified number of laps from Firebase for Conveyor 1
-    pullAndDisplay('conveyor1', lapTimes1, lapCount, () => {
-        lapStart1 = Date.now();
-        running1 = true;
-        document.getElementById('startConveyor1').textContent = "STOP CONVEYOR 1";
-        displayStats();
-    });
+    function autoPullLapsOnPageOpenAndScreenAwake() {
+        const lapCount = 4;
 
-    // Retrieve the specified number of laps from Firebase for Conveyor 2
-    pullAndDisplay('conveyor2', lapTimes2, lapCount, () => {
-        lapStart2 = Date.now();
-        running2 = true;
-        document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
-        displayStats();
-    });
+        if (!initialLapsPulled) {
+            // Retrieve the specified number of laps from Firebase for Conveyor 1
+            pullAndDisplay('conveyor1', lapTimes1, lapCount, () => {
+                lapStart1 = Date.now();
+                running1 = true;
+                document.getElementById('startConveyor1').textContent = "STOP CONVEYOR 1";
+                displayStats();
+            });
 
-    // Listen for new laps added to Firebase for Conveyor 1
-    listenForNewLaps('conveyor1', lapTimes1);
+            // Retrieve the specified number of laps from Firebase for Conveyor 2
+            pullAndDisplay('conveyor2', lapTimes2, lapCount, () => {
+                lapStart2 = Date.now();
+                running2 = true;
+                document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
+                displayStats();
+            });
 
-    // Listen for new laps added to Firebase for Conveyor 2
-    listenForNewLaps('conveyor2', lapTimes2);
-}
-
-function listenForNewLaps(conveyor, lapTimesArray) {
-    const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
-    const lapsRef = database.ref(lapsRefName);
-
-    lapsRef.on('child_added', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            try {
-                const entryData = JSON.parse(data.data);
-                if (entryData.lapTime && entryData.timeOfDay) {
-                    // Skip if the lap is in the deleted laps list
-                    if (!deletedLaps[conveyor].some(lap => lap.lapTime === entryData.lapTime && lap.timeOfDay === entryData.timeOfDay)) {
-                        lapTimesArray.push({ lapTime: entryData.lapTime, timeOfDay: entryData.timeOfDay });
-                        if (lapTimesArray.length > 10) {
-                            lapTimesArray.shift(); // Remove the oldest lap if more than 10 laps
-                        }
-                        displayStats();
-                    }
-                } else {
-                    console.error('Entry data is missing lapTime or timeOfDay:', entryData);
-                }
-            } catch (e) {
-                console.error('Error parsing entry data:', data.data, e);
-            }
+            initialLapsPulled = true; // Set the flag to true after pulling initial laps
         }
-    });
-}
 
-function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
-    // Adjust reference based on the conveyor name
-    const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
-    const lapsRef = database.ref(lapsRefName).limitToLast(count);
+        // Listen for new laps added to Firebase for Conveyor 1
+        listenForNewLaps('conveyor1', lapTimes1);
 
-    lapsRef.once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            lapTimesArray.length = 0; // Clear the existing lap times
-            
-            for (const key in data) {
-                if (data.hasOwnProperty(key)) {
-                    try {
-                        const entryData = JSON.parse(data[key].data);
-                        if (entryData.lapTime && entryData.timeOfDay) {
-                            // Skip if the lap is in the deleted laps list
-                            if (!deletedLaps[conveyor].some(lap => lap.lapTime === entryData.lapTime && lap.timeOfDay === entryData.timeOfDay)) {
-                                lapTimesArray.push({ lapTime: entryData.lapTime, timeOfDay: entryData.timeOfDay });
-                                if (lapTimesArray.length > 10) {
-                                    lapTimesArray.shift(); // Remove the oldest lap if more than 10 laps
+        // Listen for new laps added to Firebase for Conveyor 2
+        listenForNewLaps('conveyor2', lapTimes2);
+    }
+
+    function pullAndDisplay(conveyor, lapTimesArray, lapCount, callback) {
+        const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
+        const lapsRef = database.ref(lapsRefName).limitToLast(lapCount);
+
+        lapsRef.once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                lapTimesArray.length = 0; // Clear the existing lap times
+                const lapEntries = Object.entries(data);
+                lapEntries.forEach(([key, value], index) => {
+                    if (isValidJSON(value.data)) {
+                        const lapData = JSON.parse(value.data);
+                        lapTimesArray.push({ lapTime: lapData.lapTime, timeOfDay: lapData.timeOfDay });
+                        if (index === 0) {
+                            oldestAllowedTimestamp = Date.parse(lapData.timeOfDay.replace(/\//g, '/') + ':00');
+                        }
+                    }
+                });
+                displayStats();
+                if (callback) callback();
+            }
+        }).catch((error) => {
+            console.error('Error fetching data from Firebase:', error);
+        });
+    }
+
+    function pullNewerLapsOnScreenWake() {
+        // Pull newer laps for Conveyor 1
+        pullNewerLaps('conveyor1', lapTimes1, oldestAllowedTimestamp);
+
+        // Pull newer laps for Conveyor 2
+        pullNewerLaps('conveyor2', lapTimes2, oldestAllowedTimestamp);
+    }
+
+    function pullNewerLaps(conveyor, lapTimesArray, sinceTimestamp) {
+        const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
+        const lapsRef = database.ref(lapsRefName).orderByChild('timestamp').startAt(sinceTimestamp + 1);
+
+        lapsRef.once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                for (const key in data) {
+                    if (data.hasOwnProperty(key) && isValidJSON(data[key].data)) {
+                        try {
+                            const entryData = JSON.parse(data[key].data);
+                            if (entryData.lapTime && entryData.timeOfDay) {
+                                // Skip if the lap is in the deleted laps list
+                                if (!deletedLaps[conveyor].some(lap => lap.lapTime === entryData.lapTime && lap.timeOfDay === entryData.timeOfDay)) {
+                                    const lapTimestamp = Date.parse(entryData.timeOfDay.replace(/\//g, '/') + ':00');
+                                    if (lapTimestamp > sinceTimestamp) {
+                                        lapTimesArray.push({ lapTime: entryData.lapTime, timeOfDay: entryData.timeOfDay });
+                                        if (lapTimesArray.length > 10) {
+                                            lapTimesArray.shift(); // Remove the oldest lap if more than 10 laps
+                                        }
+                                        // Update the latest lap timestamp
+                                        if (!latestLapTimestamp || lapTimestamp > latestLapTimestamp) {
+                                            latestLapTimestamp = lapTimestamp;
+                                        }
+                                    }
                                 }
+                            } else {
+                                console.error('Entry data is missing lapTime or timeOfDay:', entryData);
                             }
-                        } else {
-                            console.error('Entry data is missing lapTime or timeOfDay:', entryData);
+                        } catch (e) {
+                            console.error('Error parsing entry data:', data[key].data, e);
                         }
-                    } catch (e) {
-                        console.error('Error parsing entry data:', data[key].data, e);
+                    } else {
+                        console.error('Invalid JSON data:', data[key].data);
                     }
                 }
+                displayStats();
+            } else {
+                console.error('No data found in snapshot.');
             }
-            displayStats();
-            if (callback) callback(); // Call the callback function if provided
-        } else {
-            console.error('No data found in snapshot.');
-        }
-    }).catch((error) => {
-        console.error('Error fetching data from Firebase:', error);
-    });
-}
-
+        }).catch((error) => {
+            console.error('Error fetching data from Firebase:', error);
+        });
+    }
 
     </script>
 </body>
