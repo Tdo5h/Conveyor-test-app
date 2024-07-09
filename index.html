@@ -294,13 +294,15 @@ button {
     const localLapList = [/* array of laps */];  // Example local lap list
     let latestLapTimestamp = null; // Store the timestamp of the latest lap pulled on page load
 
-    // Reinitialize Firebase and send any pending data 2 seconds after screen focus
-    window.addEventListener('focus', () => {
+   // Reinitialize Firebase and send any pending data 2 seconds after screen focus
+   window.addEventListener('focus', () => {
         setTimeout(() => {
             reinitializeFirebase();
-            pullNewerLapsOnScreenWake();
+            pullNewLapsOnPageWake();
         }, 2500); // 2.5 seconds
     });
+   
+
 
     // Helper function to validate JSON strings
     function isValidJSON(str) {
@@ -704,16 +706,24 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
         }
 
         function getFormattedTime() {
-            const now = new Date();
-            const day = now.getDate();
-            const month = now.getMonth() + 1; // Months are 0-based, so add 1
-            const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const ampm = hours >= 12 ? 'pm' : 'am';
-            const formattedTime = `${formattedDate} ${hours % 12}:${(minutes < 10 ? '0' : '') + minutes} ${ampm}`;
-            return formattedTime;
-        }
+        const now = new Date();
+        const day = now.getDate();
+        const month = now.getMonth() + 1; // Months are 0-based, so add 1
+        const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        const formattedTime = `${formattedDate} ${hours % 12 || 12}:${(minutes < 10 ? '0' : '') + minutes} ${ampm}`;
+        return formattedTime;
+
+    }
+
+// Function to parse a date string in the format day/month/year
+function parseDate(dateString) {
+    const [day, month, year] = dateString.split('/').map(Number);
+    return new Date(year, month - 1, day);
+}
+    
 
         function calculateAverageTime(lapTimes) {
         const totalLapTime = lapTimes.reduce((total, lapData) => total + lapData.lapTime, 0);
@@ -947,17 +957,18 @@ document.getElementById('recordLap2').addEventListener('click', () => {
                 }
             });
         }
-        // Ping Firebase every 2.5 minutes (250,000 milliseconds)
-        setInterval(pingFirebase, 250000);
+    // Ping Firebase every 2.5 minutes (150,000 milliseconds)
+setInterval(pingFirebase, 150000);
 
-        function confirmDeleteLap(conveyor, index) {
+function confirmDeleteLap(conveyor, index) {
     // Show a confirmation dialog
-    const confirmation = window.confirm (` ${index + 1}  ${conveyor === 'conveyor1 ' ? '1' : '2'} `);
+    const confirmation = window.confirm(` ${index + 1}  ${conveyor === 'conveyor1' ? '1' : '2'} `);
     if (confirmation) {
         deleteLap(conveyor, index);
     }
 }
-    document.addEventListener('DOMContentLoaded', () => {
+
+document.addEventListener('DOMContentLoaded', () => {
     // Your existing code here
 
     // Get references to the settings button and the pop-up window
@@ -1010,130 +1021,109 @@ document.getElementById('recordLap2').addEventListener('click', () => {
 
     // Call the displayStats function if it's defined elsewhere in your code
     displayStats();
-    // Auto pull 6 laps on page open and start conveyors
-    autoPullLapsOnPageOpenAndScreenAwake();
+    // Auto pull laps on page open
+    pullLapsOnPageOpen();
+
+    // Listen for new laps from Firebase
+    listenForNewLapsFromFirebase();
 
     // Add event listener for visibility change
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            autoPullLapsOnPageOpenAndScreenAwake();
+            pullNewLapsOnPageWake();
         }
     });
-});    
+});
 
 let pageLoadTimestamp = Date.now(); // Set a timestamp when the page loads
-    let initialLapsPulled = false; // Flag to track if initial laps have been pulled
-    let oldestAllowedTimestamp = null; // Timestamp of the 4th oldest lap
+let initialLapsPulled = false; // Flag to track if initial laps have been pulled
 
-    function autoPullLapsOnPageOpenAndScreenAwake() {
-        const lapCount = 4;
+function pullLapsOnPageOpen() {
+    const lapCount = 4;
 
-        if (!initialLapsPulled) {
-            // Retrieve the specified number of laps from Firebase for Conveyor 1
-            pullAndDisplay('conveyor1', lapTimes1, lapCount, () => {
-                lapStart1 = Date.now();
-                running1 = true;
-                document.getElementById('startConveyor1').textContent = "STOP CONVEYOR 1";
-                displayStats();
-            });
-
-            // Retrieve the specified number of laps from Firebase for Conveyor 2
-            pullAndDisplay('conveyor2', lapTimes2, lapCount, () => {
-                lapStart2 = Date.now();
-                running2 = true;
-                document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
-                displayStats();
-            });
-
-            initialLapsPulled = true; // Set the flag to true after pulling initial laps
-        }
-
-        // Listen for new laps added to Firebase for Conveyor 1
-        listenForNewLaps('conveyor1', lapTimes1);
-
-        // Listen for new laps added to Firebase for Conveyor 2
-        listenForNewLaps('conveyor2', lapTimes2);
-    }
-
-    function pullAndDisplay(conveyor, lapTimesArray, lapCount, callback) {
-        const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
-        const lapsRef = database.ref(lapsRefName).limitToLast(lapCount);
-
-        lapsRef.once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                lapTimesArray.length = 0; // Clear the existing lap times
-                const lapEntries = Object.entries(data);
-                lapEntries.forEach(([key, value], index) => {
-                    if (isValidJSON(value.data)) {
-                        const lapData = JSON.parse(value.data);
-                        lapTimesArray.push({ lapTime: lapData.lapTime, timeOfDay: lapData.timeOfDay });
-                        if (index === 0) {
-                            oldestAllowedTimestamp = Date.parse(lapData.timeOfDay.replace(/\//g, '/') + ':00');
-                        }
-                    }
-                });
-                displayStats();
-                if (callback) callback();
-            }
-        }).catch((error) => {
-            console.error('Error fetching data from Firebase:', error);
+    if (!initialLapsPulled) {
+        // Retrieve the specified number of laps from Firebase for Conveyor 1
+        pullAndDisplay('conveyor1', lapTimes1, lapCount, () => {
+            lapStart1 = Date.now();
+            running1 = true;
+            document.getElementById('startConveyor1').textContent = "STOP CONVEYOR 1";
+            displayStats();
         });
+
+        // Retrieve the specified number of laps from Firebase for Conveyor 2
+        pullAndDisplay('conveyor2', lapTimes2, lapCount, () => {
+            lapStart2 = Date.now();
+            running2 = true;
+            document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
+            displayStats();
+        });
+
+        initialLapsPulled = true; // Set the flag to true after pulling initial laps
     }
+}
 
-    function pullNewerLapsOnScreenWake() {
-        // Pull newer laps for Conveyor 1
-        pullNewerLaps('conveyor1', lapTimes1, oldestAllowedTimestamp);
+function listenForNewLapsFromFirebase() {
+    // Listen for new laps added to Firebase for Conveyor 1
+    listenForNewLaps('conveyor1', lapTimes1);
 
-        // Pull newer laps for Conveyor 2
-        pullNewerLaps('conveyor2', lapTimes2, oldestAllowedTimestamp);
-    }
+    // Listen for new laps added to Firebase for Conveyor 2
+    listenForNewLaps('conveyor2', lapTimes2);
+}
 
-    function pullNewerLaps(conveyor, lapTimesArray, sinceTimestamp) {
-        const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
-        const lapsRef = database.ref(lapsRefName).orderByChild('timestamp').startAt(sinceTimestamp + 1);
+function pullNewLapsOnPageWake() {
+    // Pull newer laps for Conveyor 1
+    pullAndDisplay('conveyor1', lapTimes1, 10);
 
-        lapsRef.once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                for (const key in data) {
-                    if (data.hasOwnProperty(key) && isValidJSON(data[key].data)) {
-                        try {
-                            const entryData = JSON.parse(data[key].data);
-                            if (entryData.lapTime && entryData.timeOfDay) {
-                                // Skip if the lap is in the deleted laps list
-                                if (!deletedLaps[conveyor].some(lap => lap.lapTime === entryData.lapTime && lap.timeOfDay === entryData.timeOfDay)) {
-                                    const lapTimestamp = Date.parse(entryData.timeOfDay.replace(/\//g, '/') + ':00');
-                                    if (lapTimestamp > sinceTimestamp) {
-                                        lapTimesArray.push({ lapTime: entryData.lapTime, timeOfDay: entryData.timeOfDay });
-                                        if (lapTimesArray.length > 10) {
-                                            lapTimesArray.shift(); // Remove the oldest lap if more than 10 laps
-                                        }
-                                        // Update the latest lap timestamp
-                                        if (!latestLapTimestamp || lapTimestamp > latestLapTimestamp) {
-                                            latestLapTimestamp = lapTimestamp;
-                                        }
-                                    }
-                                }
-                            } else {
-                                console.error('Entry data is missing lapTime or timeOfDay:', entryData);
-                            }
-                        } catch (e) {
-                            console.error('Error parsing entry data:', data[key].data, e);
-                        }
-                    } else {
-                        console.error('Invalid JSON data:', data[key].data);
-                    }
+    // Pull newer laps for Conveyor 2
+    pullAndDisplay('conveyor2', lapTimes2, 10);
+}
+
+function pullAndDisplay(conveyor, lapTimesArray, lapCount, callback) {
+    const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
+    const lapsRef = database.ref(lapsRefName).limitToLast(lapCount);
+
+    lapsRef.once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            lapTimesArray.length = 0; // Clear the existing lap times
+            const lapEntries = Object.entries(data);
+            lapEntries.forEach(([key, value]) => {
+                if (isValidJSON(value.data)) {
+                    const lapData = JSON.parse(value.data);
+                    lapTimesArray.push({ lapTime: lapData.lapTime, timeOfDay: lapData.timeOfDay });
+                }
+            });
+            displayStats();
+            if (callback) callback();
+        }
+    }).catch((error) => {
+        console.error('Error fetching data from Firebase:', error);
+    });
+}
+
+function listenForNewLaps(conveyor, lapTimesArray) {
+    const lapsRefName = conveyor === 'conveyor1' ? 'laps/conveyor1' : 'laps/conveyor2';
+    const lapsRef = database.ref(lapsRefName);
+
+    lapsRef.on('child_added', (snapshot) => {
+        const data = snapshot.val();
+        if (data && isValidJSON(data.data)) {
+            const lapData = JSON.parse(data.data);
+            if (lapData.lapTime && lapData.timeOfDay) {
+                lapTimesArray.push({ lapTime: lapData.lapTime, timeOfDay: lapData.timeOfDay });
+                if (lapTimesArray.length > 10) {
+                    lapTimesArray.shift(); // Remove the oldest lap if more than 10 laps
                 }
                 displayStats();
             } else {
-                console.error('No data found in snapshot.');
+                console.error('Lap data is missing lapTime or timeOfDay:', lapData);
             }
-        }).catch((error) => {
-            console.error('Error fetching data from Firebase:', error);
-        });
-    }
+        } else {
+            console.error('Invalid JSON data:', data.data);
+        }
+    });
+}
 
-    </script>
+</script>
 </body>
 </html>
