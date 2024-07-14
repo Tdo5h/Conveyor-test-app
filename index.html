@@ -409,8 +409,7 @@ sendDataToFirebase(dataToSend);
         let conveyor1AvgLaps = 4; // Default value for Conveyor 1 average laps
         let conveyor2AvgLaps = 4; // Default value for Conveyor 2 average laps
 
-       // Function to open the lap selection pop-up for a specific conveyor
-function openDeleteLapPopup(conveyor) {
+        function openDeleteLapPopup(conveyor) {
     const lapListDiv = document.getElementById('lapList');
     lapListDiv.innerHTML = ''; // Clear previous lap list
 
@@ -419,7 +418,7 @@ function openDeleteLapPopup(conveyor) {
 
     // Convert date and time strings to timestamps and create an array of lap objects
     const lapObjects = lapTimes.map((lapData, index) => {
-        const timestamp = Date.parse(lapData[1].replace(/\//g, '/') + ':00');
+        const timestamp = lapData.timeOfDay ? Date.parse(lapData.timeOfDay.replace(/\//g, '/') + ':00') : 0;
         return { index, timestamp, lapData };
     });
 
@@ -432,11 +431,11 @@ function openDeleteLapPopup(conveyor) {
     // Display the list of laps with delete buttons
     lapObjects.forEach((lapObj) => {
         const lapData = lapObj.lapData;
-        const lapTimeStr = lapData[0];
+        const lapTimeStr = new Date(lapData.lapTime).toISOString().substr(11, 8); // Convert milliseconds to HH:MM:SS
         lapListDiv.innerHTML += `
             <div>
                 <button onclick="deleteSelectedLap('${conveyor}', ${lapObj.index})">
-                    Delete Lap (${lapData[1]}) - ${lapTimeStr}
+                    Delete Lap (${lapData.timeOfDay}) - ${lapTimeStr}
                 </button>
             </div>
         `;
@@ -446,7 +445,6 @@ function openDeleteLapPopup(conveyor) {
     const deleteLapPopup = document.getElementById('deleteLapPopup');
     deleteLapPopup.style.display = 'block';
 }
-
     // Function to close the lap selection pop-up
     function closeDeleteLapPopup() {
         const deleteLapPopup = document.getElementById('deleteLapPopup');
@@ -513,10 +511,23 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
         const secondsStr = Math.floor(seconds % 60);
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsStr.toString().padStart(2, '0')}`;
     }
-    conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 35px;">Conveyor 2${conveyor2Units !== 10 ? `: <span style="font-size: 0.5em;">(${conveyor2Units} units)</span>` : ''}</div>`;
-    conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
     const averageTime2 = calculateAverageTimeX(lapTimes2, conveyor2AvgLaps);
-        conveyor2StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time: ${formatTime(averageTime2)}</div>`;
+    if (lapTimes2.length > 0) {
+        const estNextTime2 = new Date(parseDate(lapTimes2[lapTimes2.length - 1].timeOfDay) + averageTime2 * 1000);
+        const estNextTimeStr2 = estNextTime2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+        conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2 <span style="float: right;font-size: 0.4em; position: relative; left: 5px; top: 22px;">Est Next: ${estNextTimeStr2}</span></div>`;
+    } else {
+        conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2</div>`;
+    }
+conveyor2StatsDiv.innerHTML += `<div style="font-size: 0.8em;">
+    ${conveyor2Units !== 10 ? 
+        `(<span style="color: red;">${conveyor2Units} units</span>, 
+        <span style="color: black; font-weight: bold;">${conveyor2AvgLaps} avg laps</span>)` : 
+        `(<span style="color: black;">${conveyor2Units} units</span>, 
+        <span style="color: black; font-weight: bold;">${conveyor2AvgLaps} avg laps</span>)`}
+</div>`;
+conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
+conveyor2StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time: ${formatTime(averageTime2)}</div>`;
 conveyor2StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Average Last 4 Laps: ${formatTime(calculateAverageTimeX(lapTimes2, 4))}</div>`;
 conveyor2StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Average Last 2 Laps: ${formatTime(calculateAverageTimeX(lapTimes2, 2))}</div>`;
 
@@ -533,7 +544,6 @@ if (running2) {
     }
 }
 
-
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.1;">&nbsp;</div>';
 conveyor2StatsDiv.innerHTML += '<div class="blue" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Lap times:</div>';
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
@@ -543,7 +553,8 @@ lapTimes2.slice().reverse().forEach((lapData, idx) => {
     const lapDuration = parseTime(lapTimeStr);
     const averageLapDuration = calculateAverageTime(lapTimes2);
     const lapColor = lapDuration > 2 * averageLapDuration ? 'red' : 'purple';
-    conveyor2StatsDiv.innerHTML += `<div class="${lapColor}" style="font-family: Arial, sans-serif; font-size: 1em;">${lapTimes2.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} </div>`;
+    const isAveraged = idx < conveyor2AvgLaps;
+    conveyor2StatsDiv.innerHTML += `<div class="${lapColor}" style="font-family: Arial, sans-serif; font-size: 1em; font-weight: ${isAveraged ? 'bold' : 'normal'};">${lapTimes2.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} </div>`;
 });
 
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
@@ -561,7 +572,6 @@ const workToBeDone2_X2 = calculateWorkToBeDone(averageTimeX2_2, timeDifferenceRe
 const workToBeDone2_X2_12h = calculateWorkToBeDone(averageTimeAll2, twelveHours); // Changed to use averageTimeAll2
 const workToBeDone2_X4 = calculateWorkToBeDone(averageTimeX4_2, timeDifferenceRemaining);
 
-
 conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Full Shift Load = ${(twelveHours / averageTime2).toFixed(1)} <span style="margin-left: 40px;">Lifts = ${((twelveHours / averageTime2) * conveyor2Units / 16).toFixed(1)}</span></div>`;
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Shift End Load = ${(timeDifferenceRemaining / averageTime2).toFixed(1)} <span style="margin-left: 40px;">Lifts = ${((timeDifferenceRemaining / averageTime2) * conveyor2Units / 16).toFixed(1)}</span></div>`;
@@ -571,10 +581,23 @@ conveyor2StatsDiv.innerHTML += `<div class="green" style="display: none; font-fa
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
-conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 35px;">Conveyor 1${conveyor1Units !== 10 ? `: <span style="font-size: 0.5em;">(${conveyor1Units} units)</span>` : ''}</div>`;
-conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 const averageTime1 = calculateAverageTimeX(lapTimes1, conveyor1AvgLaps);
-        conveyor1StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time : ${formatTime(averageTime1)}</div>`;
+if (lapTimes1.length > 0) {
+    const estNextTime1 = new Date(parseDate(lapTimes1[lapTimes1.length - 1].timeOfDay) + averageTime1 * 1000);
+    const estNextTimeStr1 = estNextTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1 <span style="float: right; font-size: 0.4em;">Est Next: ${estNextTimeStr1}</span></div>`;
+} else {
+    conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1</div>`;
+}
+conveyor1StatsDiv.innerHTML += `<div style="font-size: 0.8em;">
+    ${conveyor1Units !== 10 ? 
+        `(<span style="color: red;">${conveyor1Units} units</span>, 
+        <span style="color: black; font-weight: bold;">${conveyor1AvgLaps} avg laps</span>)` : 
+        `(<span style="color: black;">${conveyor1Units} units</span>, 
+        <span style="color: black; font-weight: bold;">${conveyor1AvgLaps} avg laps</span>)`}
+</div>`;
+conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
+conveyor1StatsDiv.innerHTML += `<div class="green" style="font-family: Arial, sans-serif; font-size: 1em;">Average Lap Time : ${formatTime(averageTime1)}</div>`;
 
 conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Average Last 4 Laps: ${formatTime(calculateAverageTimeX(lapTimes1, 4))}</div>`;
 conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Average Last 2 Laps: ${formatTime(calculateAverageTimeX(lapTimes1, 2))}</div>`;
@@ -592,7 +615,6 @@ if (running1) {
     }
 }
 
-
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.1;">&nbsp;</div>';
 conveyor1StatsDiv.innerHTML += '<div class="blue" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Lap times:</div>';
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
@@ -602,9 +624,9 @@ lapTimes1.slice().reverse().forEach((lapData, idx) => {
     const lapDuration = parseTime(lapTimeStr);
     const averageLapDuration = calculateAverageTime(lapTimes1);
     const lapColor = lapDuration > 2 * averageLapDuration ? 'red' : 'purple';
-    conveyor1StatsDiv.innerHTML += `<div class="${lapColor}" style="font-family: Arial, sans-serif; font-size: 1em;">${lapTimes1.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} </div>`;
+    const isAveraged = idx < conveyor1AvgLaps;
+    conveyor1StatsDiv.innerHTML += `<div class="${lapColor}" style="font-family: Arial, sans-serif; font-size: 1em; font-weight: ${isAveraged ? 'bold' : 'normal'};">${lapTimes1.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} </div>`;
 });
-
 
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
@@ -617,7 +639,6 @@ const workToBeDone1_All = calculateWorkToBeDone(averageTimeAll1, timeDifferenceR
 const workToBeDone1_X2 = calculateWorkToBeDone(averageTimeX2_1, timeDifferenceRemaining);
 const workToBeDone1_X2_12h = calculateWorkToBeDone(averageTimeAll1, twelveHours); // Changed to use averageTimeAll1
 const workToBeDone1_X4 = calculateWorkToBeDone(averageTimeX4_1, timeDifferenceRemaining);
-
 
 conveyor1StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sans-serif; font-size: 1.18em;">Full Shift Load = ${(twelveHours / averageTime1).toFixed(1)} <span style="margin-left: 40px;">Lifts = ${((twelveHours / averageTime1) * conveyor1Units / 16).toFixed(1)}</span></div>`;
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
@@ -655,7 +676,6 @@ conveyor2StatsDiv.innerHTML += `<div class="black" style="font-family: Arial, sa
 conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 4x - Load Conveyor 1 = ${(workToBeDone1_X4 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X4 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
 conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 2x - Load Conveyor 1 = ${(workToBeDone1_X2 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X2 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 1;">&nbsp;</div>';
-
 
 
 
