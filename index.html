@@ -155,12 +155,14 @@ button {
    /* ... existing code ... */
    .qr-code {
     position: fixed;
-    bottom: 0px; /* Small padding from the bottom */
-    right: 0px;  /* Small padding from the right */
-    transform: scale(0.2); /* Scale down to 20% of its original size */
+    bottom: 20px; /* Give 10px from the bottom of the screen */
+    right: 20px;  /* Give 10px from the right side of the screen */
+    transform: scale(1); /* Scale down to 20% of its original size */
     z-index: 1000; /* Ensure it stays above other elements */
     background-color: transparent; /* Set background to transparent */
-    border-radius: 30px; /* Adjust the value to round the corners */
+    border-radius: 15px; /* Adjust the value to round the corners */
+    padding: 20; /* Ensure no padding */
+    
 }
 
 .popup-content {
@@ -766,10 +768,12 @@ if (timeDifferenceRemaining > 0) {
         });
 
         // Update Firebase when the checkbox is changed
-        blackoutCheckbox.addEventListener('change', (event) => {
-            const value = event.target.checked ? 1 : 0;
-            database.ref('settings/toggleSwitch').set(value);
-        });
+        if (blackoutCheckbox) {
+            blackoutCheckbox.addEventListener('change', (event) => {
+                const value = event.target.checked ? 1 : 0;
+                database.ref('settings/toggleSwitch').set(value);
+            });
+        }
         function calculateWorkToBeDone(averageTime, timeDifference) {
             return averageTime > 0 ? timeDifference / averageTime : 0;
         }
@@ -803,17 +807,21 @@ function parseDate(dateString) {
             fetchSettingsFromFirebase();
             listenForSettingsChanges(); // Start listening for real-time changes
             // Add event listener for the enable lap buttons
-            document.getElementById('enableLapButtons').addEventListener('click', () => {
-                const password = document.getElementById('lapPassword').value;
-                const correctPassword = 'W0rdpass'; // Replace with your actual password
-                if (password === correctPassword) {
-                    document.getElementById('recordLap1').disabled = false;
-                    document.getElementById('recordLap2').disabled = false;
-                    alert('Lap buttons enabled');
-                } else {
-                    alert('Incorrect password');
-                }
-            });
+            const enableLapButtons = document.getElementById('enableLapButtons');
+            if (enableLapButtons) {
+                enableLapButtons.addEventListener('click', () => {
+                    const password = document.getElementById('lapPassword').value;
+                    const correctPassword = 'W0rdpass'; // Replace with your actual password
+                    if (password === correctPassword) {
+                        document.getElementById('recordLap1').disabled = false;
+                        document.getElementById('recordLap2').disabled = false;
+                        alert('Lap buttons enabled');
+                    } else {
+                        alert('Incorrect password');
+                    }
+                });
+           
+            }
             // Initially disable the lap buttons
             document.getElementById('recordLap1').disabled = true;
             document.getElementById('recordLap2').disabled = true;
@@ -930,7 +938,11 @@ document.getElementById('startConveyor2').addEventListener('click', () => {
                         document.getElementById('conveyor2AvgLaps').value = conveyor2AvgLaps;
                     }
                     if (settings.toggleSwitch !== undefined) {
-                        document.getElementById('toggleSwitch').checked = settings.toggleSwitch;
+                        const toggleSwitchElement = document.getElementById('toggleSwitch');
+                        if (toggleSwitchElement) {
+                            toggleSwitchElement.checked = settings.toggleSwitch;
+                       
+                        }
                     }
                     displayStats();
                 }
@@ -1086,14 +1098,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsPopup = document.getElementById('settingsPopup');
 
     // Function to open the settings pop-up
-    openSettingsButton.addEventListener('click', () => {
-        settingsPopup.style.display = 'block';
-    });
+    if (openSettingsButton) {
+        openSettingsButton.addEventListener('click', () => {
+            settingsPopup.style.display = 'block';
+        });
+    } else {
+        console.error('Open settings button element not found');
+    }
 
     // Function to close the settings pop-up
-    closeSettingsButton.addEventListener('click', () => {
-        settingsPopup.style.display = 'none';
-    });
+    if (closeSettingsButton) {
+        closeSettingsButton.addEventListener('click', () => {
+            settingsPopup.style.display = 'none';
+        });
+    } else {
+        console.error('Close settings button element not found');
+    }
 
     // Event listeners for conveyor unit settings
     document.getElementById('conveyor1Units').addEventListener('change', (event) => {
@@ -1153,8 +1173,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLapListeners('conveyor1Boron', lapTimes1);
     setupLapListeners('conveyor2Boron', lapTimes2);
 
-    // Start the timer to show elapsed time since the newest lap
-    startElapsedTimeTimer();
+    // Watch Firebase for new laps and pull them
+    watchForNewLaps('conveyor1', lapTimes1);
+    watchForNewLaps('conveyor2', lapTimes2);
 });
 
 function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
@@ -1193,6 +1214,8 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
         } else {
             console.error('No data found in snapshot.');
         }
+    }).catch((error) => {
+        console.error('Error pulling data from Firebase:', error);
     });
 }
 
@@ -1221,6 +1244,8 @@ function setupLapListeners(conveyor, lapTimesArray) {
                 }
             }
         });
+    }).catch((error) => {
+        console.error('Error setting up lap listeners in Firebase:', error);
     });
 }
 
@@ -1280,15 +1305,13 @@ function openDeleteLapPopup(conveyor) {
 }
 
 function parseTime(timeStr) {
-    if (typeof timeStr !== 'string') {
-        console.error('Invalid time string:', timeStr);
-        return 0;
-    }
-    const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+    
+    const timeParts = timeStr.split(':').map(Number);
+    if (timeParts.length !== 3 || timeParts.some(isNaN)) {
         console.error('Invalid time components:', timeStr);
         return 0;
     }
+    const [hours, minutes, seconds] = timeParts;
     return hours * 3600 + minutes * 60 + seconds;
 }
 
@@ -1306,11 +1329,8 @@ function checkLapLengths(lapTimes) {
     }
 }
 
-function setupLapListeners(conveyor, lapTimesArray) {
-    let lastLapKey = null;
-
-    // Listen to conveyor1Boron and conveyor2Boron paths
-    const lapsRef = database.ref(`${conveyor}`).limitToLast(1);
+function watchForNewLaps(conveyor, lapTimesArray) {
+    const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(1);
 
     lapsRef.once('value', (snapshot) => {
         const entries = Object.entries(snapshot.val() || {});
@@ -1331,9 +1351,28 @@ function setupLapListeners(conveyor, lapTimesArray) {
                 }
             }
         });
+    }).catch((error) => {
+        console.error('Error setting up lap listeners in Firebase:', error);
     });
 }
 
+function pullLapsFromFirebase(conveyor, lapTimesArray, lapCount) {
+    const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(lapCount);
+
+    lapsRef.once('value', (snapshot) => {
+        const entries = Object.entries(snapshot.val() || {});
+        entries.forEach(([key, rawData]) => {
+            try {
+                const parsedData = JSON.parse(rawData.data);
+                handleNewLap(parsedData, lapTimesArray);
+            } catch (e) {
+                console.error('Failed to parse raw data:', rawData, e);
+            }
+        });
+    }).catch((error) => {
+        console.error('Error pulling laps from Firebase:', error);
+    });
+}
 
     </script>
 </body>
