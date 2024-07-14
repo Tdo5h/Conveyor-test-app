@@ -141,7 +141,16 @@ button {
     box-sizing: border-box;/* Ensures that padding and border are included in the total width and height */
     z-index: 1000;         /* Ensures it stays above other elements */
 }
-
+#topClock {
+            position: fixed;
+            top: 0;
+            left: 27%; /* 30% left of center */
+            width: 33%;
+            text-align: center;
+            font-size: 2.3em;
+            font-family: Arial, sans-serif; /* Set the font family */
+            z-index: 1001; /* Ensure it stays above other elements */
+        }
 
 
 .popup-content {
@@ -282,6 +291,7 @@ button {
     <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="blackoutScreen"></div>
+    <div id="topClock"style="padding: 15px;></div>
 </div>
 
 <div id="clock" class="countdown-timer" style="position: fixed; bottom: 0; left: 33.33%; width: 33.33%; font-size: 2em; text-align: center;"></div>
@@ -496,6 +506,21 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
         displayStats();
     }
 });
+function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            const formattedTime = `${hours}:${minutes}:${ampm}`;
+            document.getElementById('topClock').textContent = formattedTime;
+        }
+
+        setInterval(updateClock, 1000); // Update the clock every second
+        updateClock(); // Initial call to display the clock immediately
+        
         function calculateWorkToBeDone(averageTime, timeDifference) {
             return (averageTime > 0 ? timeDifference / averageTime : 0) - loadValue1 - loadValue2;
         }
@@ -680,7 +705,7 @@ conveyor1StatsDiv.innerHTML += '<div style="line-height: 1;">&nbsp;</div>';
 
 
 if (timeDifferenceRemaining > 0) {
-    conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 25%; width: 28.33%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
+    conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 30%; width: 28.33%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
 }
 
 }
