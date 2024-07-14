@@ -277,7 +277,7 @@ button {
 
     </div>
 </div>
-<div id="stats" class="content" style="display: flex; justify-content: space-between; width: 100%; height: 100%;">
+<div id="stats" class="content" style="display: flex;padding:30px; justify-content: space-between; width: 120%; height: 100%;">
     <!-- Display statistics here -->
     <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
@@ -515,7 +515,7 @@ document.getElementById('subtractLoad2').addEventListener('input', () => {
     if (lapTimes2.length > 0) {
         const estNextTime2 = new Date(parseDate(lapTimes2[lapTimes2.length - 1].timeOfDay) + averageTime2 * 1000);
         const estNextTimeStr2 = estNextTime2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-        conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2 <span style="float: right;font-size: 0.4em; position: relative; left: 5px; top: 22px;">Est Next: ${estNextTimeStr2}</span></div>`;
+        conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 19px;">Est Next: ${estNextTimeStr2}</span></div>`;
     } else {
         conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2</div>`;
     }
@@ -585,7 +585,7 @@ const averageTime1 = calculateAverageTimeX(lapTimes1, conveyor1AvgLaps);
 if (lapTimes1.length > 0) {
     const estNextTime1 = new Date(parseDate(lapTimes1[lapTimes1.length - 1].timeOfDay) + averageTime1 * 1000);
     const estNextTimeStr1 = estNextTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1 <span style="float: right; font-size: 0.4em;">Est Next: ${estNextTimeStr1}</span></div>`;
+    conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 19px;">Est Next: ${estNextTimeStr1}</span></div>`;
 } else {
     conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1</div>`;
 }
