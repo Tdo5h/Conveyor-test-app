@@ -156,7 +156,7 @@ button {
     position: fixed;
     top: 25%;
     left: 50%;
-    transform: translate(-60%, -50%) scale(0.4); /* Scale down to 40% (60% smaller) */
+    transform: translate(-57%, -50%) scale(0.4); /* Scale down to 40% (60% smaller) */
     z-index: 1000; /* Ensure it stays above other elements */
     background-color: transparent; /* Set background to transparent */
     border-radius: 30px; /* Adjust the value to round the corners */
@@ -327,8 +327,8 @@ firebase.initializeApp(firebaseConfig);
 let database = firebase.database();
 
 let isOnline = true; // Track online/offline status
-let pendingDataToSend = []; // Array to store data when offline
-const localLapList = [/* array of laps */];  // Example local lap list
+        let pendingDataToSend = []; // Array to store data when offline
+        const localLapList = [/* array of laps */];  // Example local lap list
 
 // Reinitialize Firebase and send any pending data 2 seconds after screen focus
 window.addEventListener('focus', () => {
@@ -410,6 +410,7 @@ window.addEventListener('offline', () => {
 const dataToSend = { /* your data object */ };
 sendDataToFirebase(dataToSend);
 
+        
         let lapStart1 = 0;
         let lapStart2 = 0;
         let running1 = false;
@@ -1075,11 +1076,11 @@ document.getElementById('pullLaps').addEventListener('click', () => {
         deleteLap(conveyor, index);
     }
 }
-    document.addEventListener('DOMContentLoaded', () => {
-    
-   // Setup listeners for both conveyors
-   setupLapListeners('conveyor1', lapTimes1);
+document.addEventListener('DOMContentLoaded', () => {
+    // Setup listeners for both conveyors
+    setupLapListeners('conveyor1', lapTimes1);
     setupLapListeners('conveyor2', lapTimes2);
+
     // Get references to the settings button and the pop-up window
     const openSettingsButton = document.getElementById('openSettings');
     const closeSettingsButton = document.getElementById('closeSettings');
@@ -1116,14 +1117,15 @@ document.getElementById('pullLaps').addEventListener('click', () => {
             displayStats();
         }
     });
+
     document.getElementById('blackoutCheckbox').addEventListener('change', (event) => {
-            const blackoutScreen = document.getElementById('blackoutScreen');
-            if (event.target.checked) {
-                blackoutScreen.style.display = 'block';
-            } else {
-                blackoutScreen.style.display = 'none';
-            }
-        });
+        const blackoutScreen = document.getElementById('blackoutScreen');
+        if (event.target.checked) {
+            blackoutScreen.style.display = 'block';
+        } else {
+            blackoutScreen.style.display = 'none';
+        }
+    });
 
     // Event listeners for average laps settings
     document.getElementById('conveyor1AvgLaps').addEventListener('change', (event) => {
@@ -1164,9 +1166,7 @@ document.getElementById('pullLaps').addEventListener('click', () => {
 
     // Start the timer to show elapsed time since the newest lap
     startElapsedTimeTimer();
-
-});    
-
+});
 
 function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
     // Adjust reference based on the conveyor name
@@ -1176,13 +1176,13 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
         const data = snapshot.val();
         if (data) {
             lapTimesArray.length = 0; // Clear the existing lap times
-            
+
             for (const key in data) {
                 if (data.hasOwnProperty(key)) {
                     const entryData = data[key];
                     if (entryData) {
                         try {
-                            const parsedData = JSON.parse(entryData.data);  // Parse the stringified JSON
+                            const parsedData = JSON.parse(entryData.data); // Parse the stringified JSON
                             if (parsedData.lapTime && parsedData.timeOfDay) {
                                 lapTimesArray.push(parsedData);
                                 if (lapTimesArray.length > 10) {
@@ -1208,49 +1208,49 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
 }
 
 function setupLapListeners(conveyor, lapTimesArray) {
-        let lastLapKey = null;
+    let lastLapKey = null;
 
-        // Listen to laps/conveyor1 and laps/conveyor2 paths
-        const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(1);
-        
-        lapsRef.once('value', (snapshot) => {
-            const entries = Object.entries(snapshot.val() || {});
-            if (entries.length > 0) {
-                lastLapKey = entries[0][0];  // Store the key of the last lap
-            }
+    // Listen to laps/conveyor1 and laps/conveyor2 paths
+    const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(1);
 
-            lapsRef.on('child_added', (childSnapshot) => {
-                if (childSnapshot.key !== lastLapKey) {
-                    lastLapKey = childSnapshot.key;  // Update the key of the last lap
-                    
-                    const rawData = childSnapshot.val();
-                    try {
-                        const parsedData = JSON.parse(rawData.data);
-                        handleNewLap(parsedData, lapTimesArray);
-                    } catch (e) {
-                        console.error('Failed to parse raw data:', rawData, e);
-                    }
-                }
-            });
-        });
-    }
-
-    function handleNewLap(lapData, lapTimes) {
-        try {
-            if (lapData.lapTime && lapData.timeOfDay) {
-                lapTimes.push(lapData);
-                if (lapTimes.length > 10) {
-                    lapTimes.shift(); // Remove the oldest lap if more than 10 laps
-                }
-                checkLapLengths(lapTimes); // Check lap lengths when a new lap is added
-                displayStats();
-            } else {
-                console.error('Lap data is missing lapTime or timeOfDay:', lapData);
-            }
-        } catch (e) {
-            console.error('Failed to handle new lap data:', lapData, e);
+    lapsRef.once('value', (snapshot) => {
+        const entries = Object.entries(snapshot.val() || {});
+        if (entries.length > 0) {
+            lastLapKey = entries[0][0]; // Store the key of the last lap
         }
+
+        lapsRef.on('child_added', (childSnapshot) => {
+            if (childSnapshot.key !== lastLapKey) {
+                lastLapKey = childSnapshot.key; // Update the key of the last lap
+
+                const rawData = childSnapshot.val();
+                try {
+                    const parsedData = JSON.parse(rawData.data);
+                    handleNewLap(parsedData, lapTimesArray);
+                } catch (e) {
+                    console.error('Failed to parse raw data:', rawData, e);
+                }
+            }
+        });
+    });
+}
+
+function handleNewLap(lapData, lapTimes) {
+    try {
+        if (lapData.lapTime && lapData.timeOfDay) {
+            lapTimes.push(lapData);
+            if (lapTimes.length > 10) {
+                lapTimes.shift(); // Remove the oldest lap if more than 10 laps
+            }
+            checkLapLengths(lapTimes); // Check lap lengths when a new lap is added
+            displayStats();
+        } else {
+            console.error('Lap data is missing lapTime or timeOfDay:', lapData);
+        }
+    } catch (e) {
+        console.error('Failed to handle new lap data:', lapData, e);
     }
+}
 
 // Convert date and time strings to timestamps and create an array of lap objects
 function openDeleteLapPopup(conveyor) {
@@ -1303,8 +1303,6 @@ function parseTime(timeStr) {
     return hours * 3600 + minutes * 60 + seconds;
 }
 
-
-
 function checkLapLengths(lapTimes) {
     const lapDurations = lapTimes.map(lap => parseTime(lap.lapTime));
     const averageLapDuration = lapDurations.reduce((a, b) => a + b, 0) / lapDurations.length;
@@ -1319,24 +1317,22 @@ function checkLapLengths(lapTimes) {
     }
 }
 
-
-
 function setupLapListeners(conveyor, lapTimesArray) {
     let lastLapKey = null;
 
     // Listen to conveyor1Boron and conveyor2Boron paths
     const lapsRef = database.ref(`${conveyor}`).limitToLast(1);
-    
+
     lapsRef.once('value', (snapshot) => {
         const entries = Object.entries(snapshot.val() || {});
         if (entries.length > 0) {
-            lastLapKey = entries[0][0];  // Store the key of the last lap
+            lastLapKey = entries[0][0]; // Store the key of the last lap
         }
 
         lapsRef.on('child_added', (childSnapshot) => {
             if (childSnapshot.key !== lastLapKey) {
-                lastLapKey = childSnapshot.key;  // Update the key of the last lap
-                
+                lastLapKey = childSnapshot.key; // Update the key of the last lap
+
                 const rawData = childSnapshot.val();
                 try {
                     const parsedData = JSON.parse(rawData.data);
