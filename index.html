@@ -1149,6 +1149,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Call the displayStats function if it's defined elsewhere in your code
     displayStats();
+
+    // Auto pull 10 laps on page open and start conveyors
+    const lapCount = 10;
+
+    // Retrieve the specified number of laps from Firebase for Conveyor 1
+    pullAndDisplay('conveyor1', lapTimes1, lapCount, () => {
+        lapStart1 = Date.now();
+        running1 = true;
+        document.getElementById('startConveyor1').textContent = "STOP CONVEYOR 1";
+        displayStats();
+    });
+
+    // Retrieve the specified number of laps from Firebase for Conveyor 2
+    pullAndDisplay('conveyor2', lapTimes2, lapCount, () => {
+        lapStart2 = Date.now();
+        running2 = true;
+        document.getElementById('startConveyor2').textContent = "STOP CONVEYOR 2";
+        displayStats();
+    });
+
+    // Setup listeners for both conveyors
+    setupLapListeners('conveyor1Boron', lapTimes1);
+    setupLapListeners('conveyor2Boron', lapTimes2);
+
+    // Watch Firebase for new laps and pull them
+    watchForNewLaps('conveyor1', lapTimes1);
+    watchForNewLaps('conveyor2', lapTimes2);
 });
 
 function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
@@ -1384,4 +1411,6 @@ function pullLapsFromFirebase(conveyor, lapTimesArray, lapCount) {
     }).catch((error) => {
         console.error('Error pulling laps from Firebase:', error);
     });
-}
+}</script>
+</body>
+</html>
