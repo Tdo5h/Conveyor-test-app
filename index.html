@@ -62,7 +62,7 @@
         .input-small { width: 6rem; }
         .red { color: red; }
         .green { color: green; }
-        .blue { color: blue; }
+        .blue { color: rgb(7, 7, 94); }
          .purple { color: purple; }
         .orange { color: orange; }
         .content {
@@ -157,7 +157,7 @@ button {
         position: fixed;
         top: 25%;
         left: 50%;
-        transform: translate(-60%, -50%) scale(0.3); /* Scale down to 40% (60% smaller) */
+        transform: translate(-59%, -50%) scale(0.4); /* Scale down to 40% (60% smaller) */
         z-index: 1000; /* Ensure it stays above other elements */
         background-color: transparent; /* Set background to transparent */
         border-radius: 30px; /* Adjust the value to round the corners */
@@ -590,7 +590,7 @@ lapTimes2.slice().reverse().forEach((lapData, idx) => {
     const [date, time] = lapData.timeOfDay.split(' ');
     const lapDuration = parseTime(lapTimeStr);
     const averageLapDuration = calculateAverageTime(lapTimes2);
-    const lapColor = lapDuration > 2 * averageLapDuration ? 'red' : 'purple';
+    const lapColor = lapDuration > 2 * averageLapDuration ? 'red' : 'blue';
     const isAveraged = idx < conveyor2AvgLaps;
     conveyor2StatsDiv.innerHTML += `<div class="${lapColor}" style="font-family: Arial, sans-serif; font-size: 1em; font-weight: ${isAveraged ? 'bold' : 'normal'};">${lapTimes2.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} </div>`;
 });
@@ -661,7 +661,7 @@ lapTimes1.slice().reverse().forEach((lapData, idx) => {
     const [date, time] = lapData.timeOfDay.split(' ');
     const lapDuration = parseTime(lapTimeStr);
     const averageLapDuration = calculateAverageTime(lapTimes1);
-    const lapColor = lapDuration > 2 * averageLapDuration ? 'red' : 'purple';
+    const lapColor = lapDuration > 2 * averageLapDuration ? 'red' : 'blue';
     const isAveraged = idx < conveyor1AvgLaps;
     conveyor1StatsDiv.innerHTML += `<div class="${lapColor}" style="font-family: Arial, sans-serif; font-size: 1em; font-weight: ${isAveraged ? 'bold' : 'normal'};">${lapTimes1.length - idx}.(${lapData.timeOfDay}) - ${lapTimeStr} </div>`;
 });
@@ -1144,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Call the displayStats function if it's defined elsewhere in your code
     displayStats();
 
-    // Auto pull 1 lap on page open and start conveyors
+    // Auto pull 10 laps on page open and start conveyors
     const lapCount = 10;
 
     // Retrieve the specified number of laps from Firebase for Conveyor 1
@@ -1347,7 +1347,6 @@ function setupLapListeners(conveyor, lapTimesArray) {
         });
     });
 }
-
 
 
     </script>
