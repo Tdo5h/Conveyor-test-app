@@ -66,9 +66,9 @@
          .purple { color: purple; }
         .orange { color: orange; }
         .content {
-            background-color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(209, 209, 209, 0.7);
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 0px;
         }
         
         
@@ -201,8 +201,8 @@ button {
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
         <div style="display: flex; justify-content: start; width: 100%; margin-bottom: 0;">
-            <button id="openSettings" style="border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px; position: absolute; top: 0; left: 0;" onclick="document.getElementById('settingsPopup').style.display='block'">Settings</button>
-            <button id="pullLaps" style="border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px; position: absolute; top: 0; right: 0;">Pull Laps</button>
+            <button id="openSettings" style="display: none; border: 1px solid black; border-radius: 5px; margin-right: auto; margin-top: 10px; position: absolute; top: 0; left: 0;" onclick="document.getElementById('settingsPopup').style.display='block'">Settings</button>
+<button id="pullLaps" style="display: none; border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px; position: absolute; top: 0; right: 0;">Pull Laps</button>
         </div>              
     </div>
     
@@ -961,9 +961,6 @@ document.getElementById('startConveyor2').addEventListener('click', () => {
                         conveyor2AvgLaps = settings.conveyor2AvgLaps;
                         document.getElementById('conveyor2AvgLaps').value = conveyor2AvgLaps;
                     }
-                    if (settings.toggleSwitch !== undefined) {
-                        document.getElementById('toggleSwitch').checked = settings.toggleSwitch;
-                    }
                     displayStats();
                 }
             });
@@ -1120,16 +1117,6 @@ document.addEventListener('DOMContentLoaded', () => {
             displayStats();
         }
     });
-
-    document.getElementById('blackoutCheckbox').addEventListener('change', (event) => {
-        const blackoutScreen = document.getElementById('blackoutScreen');
-        if (event.target.checked) {
-            blackoutScreen.style.display = 'block';
-        } else {
-            blackoutScreen.style.display = 'none';
-        }
-    });
-
     // Event listeners for average laps settings
     document.getElementById('conveyor1AvgLaps').addEventListener('change', (event) => {
         conveyor1AvgLaps = parseInt(event.target.value);
