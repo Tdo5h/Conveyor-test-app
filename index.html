@@ -1076,8 +1076,10 @@ document.getElementById('pullLaps').addEventListener('click', () => {
     }
 }
     document.addEventListener('DOMContentLoaded', () => {
-    // Your existing code here
-
+    
+   // Setup listeners for both conveyors
+   setupLapListeners('conveyor1', lapTimes1);
+    setupLapListeners('conveyor2', lapTimes2);
     // Get references to the settings button and the pop-up window
     const openSettingsButton = document.getElementById('openSettings');
     const closeSettingsButton = document.getElementById('closeSettings');
@@ -1206,49 +1208,49 @@ function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
 }
 
 function setupLapListeners(conveyor, lapTimesArray) {
-    let lastLapKey = null;
+        let lastLapKey = null;
 
-    // Listen to laps/conveyor1 and laps/conveyor2 paths
-    const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(1);
-    
-    lapsRef.once('value', (snapshot) => {
-        const entries = Object.entries(snapshot.val() || {});
-        if (entries.length > 0) {
-            lastLapKey = entries[0][0];  // Store the key of the last lap
-        }
+        // Listen to laps/conveyor1 and laps/conveyor2 paths
+        const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(1);
+        
+        lapsRef.once('value', (snapshot) => {
+            const entries = Object.entries(snapshot.val() || {});
+            if (entries.length > 0) {
+                lastLapKey = entries[0][0];  // Store the key of the last lap
+            }
 
-        lapsRef.on('child_added', (childSnapshot) => {
-            if (childSnapshot.key !== lastLapKey) {
-                lastLapKey = childSnapshot.key;  // Update the key of the last lap
-                
-                const rawData = childSnapshot.val();
-                try {
-                    const parsedData = JSON.parse(rawData.data);
-                    handleNewLap(parsedData, lapTimesArray);
-                } catch (e) {
-                    console.error('Failed to parse raw data:', rawData, e);
+            lapsRef.on('child_added', (childSnapshot) => {
+                if (childSnapshot.key !== lastLapKey) {
+                    lastLapKey = childSnapshot.key;  // Update the key of the last lap
+                    
+                    const rawData = childSnapshot.val();
+                    try {
+                        const parsedData = JSON.parse(rawData.data);
+                        handleNewLap(parsedData, lapTimesArray);
+                    } catch (e) {
+                        console.error('Failed to parse raw data:', rawData, e);
+                    }
                 }
-            }
+            });
         });
-    });
-}
-
-function handleNewLap(lapData, lapTimes) {
-    try {
-        if (lapData.lapTime && lapData.timeOfDay) {
-            lapTimes.push(lapData);
-            if (lapTimes.length > 10) {
-                lapTimes.shift(); // Remove the oldest lap if more than 10 laps
-            }
-            checkLapLengths(lapTimes); // Check lap lengths when a new lap is added
-            displayStats();
-        } else {
-            console.error('Lap data is missing lapTime or timeOfDay:', lapData);
-        }
-    } catch (e) {
-        console.error('Failed to handle new lap data:', lapData, e);
     }
-}
+
+    function handleNewLap(lapData, lapTimes) {
+        try {
+            if (lapData.lapTime && lapData.timeOfDay) {
+                lapTimes.push(lapData);
+                if (lapTimes.length > 10) {
+                    lapTimes.shift(); // Remove the oldest lap if more than 10 laps
+                }
+                checkLapLengths(lapTimes); // Check lap lengths when a new lap is added
+                displayStats();
+            } else {
+                console.error('Lap data is missing lapTime or timeOfDay:', lapData);
+            }
+        } catch (e) {
+            console.error('Failed to handle new lap data:', lapData, e);
+        }
+    }
 
 // Convert date and time strings to timestamps and create an array of lap objects
 function openDeleteLapPopup(conveyor) {
