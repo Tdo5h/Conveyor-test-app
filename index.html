@@ -94,17 +94,18 @@
 
 /* Style for the pop-up window */
 .popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.242); /* Darker background for better readability */
-    z-index: 1;
-    color: rgb(0, 0, 0); /* White text color for better readability */
-    font-size: 1.2em; /* Slightly larger font size for better readability */
-}
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.242); /* Darker background for better readability */
+        z-index: 2000; /* Ensure it stays above the QR code */
+        color: rgb(0, 0, 0); /* White text color for better readability */
+        font-size: 1.2em; /* Slightly larger font size for better readability */
+    }
+
 button {
     color: rgb(0, 0, 0);
     background-color: white;
@@ -153,14 +154,15 @@ button {
         }
    /* ... existing code ... */
    .qr-code {
-    position: fixed;
-    top: 25%;
-    left: 50%;
-    transform: translate(-57%, -50%) scale(0.4); /* Scale down to 40% (60% smaller) */
-    z-index: 1000; /* Ensure it stays above other elements */
-    background-color: transparent; /* Set background to transparent */
-    border-radius: 30px; /* Adjust the value to round the corners */
-}
+        position: fixed;
+        top: 25%;
+        left: 50%;
+        transform: translate(-65%, -50%) scale(0.4); /* Scale down to 40% (60% smaller) */
+        z-index: 1000; /* Ensure it stays above other elements */
+        background-color: transparent; /* Set background to transparent */
+        border-radius: 30px; /* Adjust the value to round the corners */
+    }
+
 
 .popup-content {
     background-color: white;
@@ -1076,6 +1078,7 @@ document.getElementById('pullLaps').addEventListener('click', () => {
         deleteLap(conveyor, index);
     }
 }
+
 document.addEventListener('DOMContentLoaded', () => {
     // Setup listeners for both conveyors
     setupLapListeners('conveyor1', lapTimes1);
@@ -1345,31 +1348,7 @@ function setupLapListeners(conveyor, lapTimesArray) {
     });
 }
 
-function startElapsedTimeTimer() {
-    setInterval(() => {
-        const now = Date.now();
-        const newestLap1 = lapTimes1[lapTimes1.length - 1];
-        const newestLap2 = lapTimes2[lapTimes2.length - 1];
 
-        if (newestLap1) {
-            const lapTime1 = Date.parse(newestLap1.timeOfDay.replace(/\//g, '/') + ':00');
-            const timeSinceLastLap1 = now - lapTime1;
-            const elapsedTime1 = new Date(timeSinceLastLap1).toISOString().substr(11, 8);
-            const elapsedTimeElement1 = document.getElementById('elapsedTime1');
-            elapsedTimeElement1.textContent = elapsedTime1;
-            elapsedTimeElement1.style.color = 'blue';
-        }
-
-        if (newestLap2) {
-            const lapTime2 = Date.parse(newestLap2.timeOfDay.replace(/\//g, '/') + ':00');
-            const timeSinceLastLap2 = now - lapTime2;
-            const elapsedTime2 = new Date(timeSinceLastLap2).toISOString().substr(11, 8);
-            const elapsedTimeElement2 = document.getElementById('elapsedTime2');
-            elapsedTimeElement2.textContent = elapsedTime2;
-            elapsedTimeElement2.style.color = 'blue';
-        }
-    }, 1000);
-}
 
     </script>
 </body>
