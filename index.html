@@ -772,6 +772,56 @@ if (timeDifferenceRemaining > 0) {
                 database.ref('settings/toggleSwitch').set(value);
             });
         }
+         // Function to flash the blackout screen
+    function flashBlackoutScreen() {
+        blackoutScreen.style.display = 'block';
+        setTimeout(() => {
+            blackoutScreen.style.display = 'none';
+        }, 1000); // Flash for 1 second
+    }
+
+    // Function to check if it's 10 minutes before the estimated next time
+    function checkFlashCondition() {
+        const now = new Date();
+        const estNextTime1 = new Date(parseDate(getNewestLapTime(lapTimes1)) + calculateAverageTimeX(lapTimes1, conveyor1AvgLaps) * 1000);
+        const estNextTime2 = new Date(parseDate(getNewestLapTime(lapTimes2)) + calculateAverageTimeX(lapTimes2, conveyor2AvgLaps) * 1000);
+
+        const tenMinutesBeforeEstNextTime1 = new Date(estNextTime1.getTime() - 10 * 60 * 1000);
+        const tenMinutesBeforeEstNextTime2 = new Date(estNextTime2.getTime() - 10 * 60 * 1000);
+
+        if (now >= tenMinutesBeforeEstNextTime1 && now < estNextTime1) {
+            flashBlackoutScreen();
+        } else if (now >= tenMinutesBeforeEstNextTime2 && now < estNextTime2) {
+            flashBlackoutScreen();
+        }
+    }
+
+    // Function to reset Flash value at 5:15 am and pm
+    function resetFlashValue() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+
+        if (minutes === 15 && (hours === 5 || hours === 17)) {
+            database.ref('settings/Flash').once('value').then(snapshot => {
+                const value = snapshot.val();
+                if (value === 1) {
+                    database.ref('settings/Flash').set(0);
+                }
+            });
+        }
+    }
+
+    // Listen for changes in the Flash value
+    database.ref('settings/Flash').on('value', (snapshot) => {
+        const value = snapshot.val();
+        if (value === 1) {
+            checkFlashCondition();
+        }
+    });
+
+    // Check and reset Flash value every minute
+    setInterval(resetFlashValue, 60000);
         function calculateWorkToBeDone(averageTime, timeDifference) {
             return averageTime > 0 ? timeDifference / averageTime : 0;
         }
