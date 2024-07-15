@@ -1285,22 +1285,28 @@ function setupLapListeners(conveyor, lapTimesArray) {
     });
 }
 
-function handleNewLap(lapData, lapTimes) {
-    try {
-        if (lapData.lapTime && lapData.timeOfDay) {
-            lapTimes.push(lapData);
-            if (lapTimes.length > 10) {
-                lapTimes.shift(); // Remove the oldest lap if more than 10 laps
+ function handleNewLap(lapData, lapTimes) {
+        try {
+            if (lapData.lapTime && lapData.timeOfDay) {
+                // Check if the lap already exists in the lapTimes array
+                const lapExists = lapTimes.some(lap => lap.timeOfDay === lapData.timeOfDay && lap.lapTime === lapData.lapTime);
+                if (!lapExists) {
+                    lapTimes.push(lapData);
+                    if (lapTimes.length > 10) {
+                        lapTimes.shift(); // Remove the oldest lap if more than 10 laps
+                    }
+                    checkLapLengths(lapTimes); // Check lap lengths when a new lap is added
+                    displayStats();
+                } else {
+                    console.log('Duplicate lap detected:', lapData);
+                }
+            } else {
+                console.error('Lap data is missing lapTime or timeOfDay:', lapData);
             }
-            checkLapLengths(lapTimes); // Check lap lengths when a new lap is added
-            displayStats();
-        } else {
-            console.error('Lap data is missing lapTime or timeOfDay:', lapData);
+        } catch (e) {
+            console.error('Failed to handle new lap data:', lapData, e);
         }
-    } catch (e) {
-        console.error('Failed to handle new lap data:', lapData, e);
     }
-}
 
 // Convert date and time strings to timestamps and create an array of lap objects
 function openDeleteLapPopup(conveyor) {
