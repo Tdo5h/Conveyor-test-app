@@ -551,13 +551,13 @@ function updateClock() {
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsStr.toString().padStart(2, '0')}`;
     }
     const averageTime2 = calculateAverageTimeX(lapTimes2, conveyor2AvgLaps);
-    if (lapTimes2.length > 0) {
-        const estNextTime2 = new Date(parseDate(lapTimes2[lapTimes2.length - 1].timeOfDay) + averageTime2 * 1000);
-        const estNextTimeStr2 = estNextTime2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-        conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 19px;">Est Next: ${estNextTimeStr2}</span></div>`;
-    } else {
-        conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2</div>`;
-    }
+        if (lapTimes2.length > 0) {
+            const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
+            const estNextTimeStr2 = estNextTime2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+            conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 19px;">Est Next: ${estNextTimeStr2}</span></div>`;
+        } else {
+            conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2</div>`;
+        }
 conveyor2StatsDiv.innerHTML += `<div style="font-size: 0.8em;">
     ${conveyor2Units !== 10 ? 
         `(<span style="color: red;">${conveyor2Units} units</span>, 
@@ -621,13 +621,13 @@ conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 
 conveyor2StatsDiv.innerHTML += '<div style="line-height: 0.5;">&nbsp;</div>';
 const averageTime1 = calculateAverageTimeX(lapTimes1, conveyor1AvgLaps);
-if (lapTimes1.length > 0) {
-    const estNextTime1 = new Date(parseDate(lapTimes1[lapTimes1.length - 1].timeOfDay) + averageTime1 * 1000);
-    const estNextTimeStr1 = estNextTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 19px;">Est Next: ${estNextTimeStr1}</span></div>`;
-} else {
-    conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1</div>`;
-}
+        if (lapTimes1.length > 0) {
+            const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
+            const estNextTimeStr1 = estNextTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+            conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 19px;">Est Next: ${estNextTimeStr1}</span></div>`;
+        } else {
+            conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1</div>`;
+        }
 conveyor1StatsDiv.innerHTML += `<div style="font-size: 0.8em;">
     ${conveyor1Units !== 10 ? 
         `(<span style="color: red;">${conveyor1Units} units</span>, 
@@ -716,9 +716,13 @@ conveyor1StatsDiv.innerHTML += `<div class="black" style="display: none; font-fa
 conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-family: Arial, sans-serif; font-size: 1em;">Avg 2x - Load Conveyor 1 = ${(workToBeDone1_X2 + loadValue1).toFixed(1)}  (Lifts = ${((workToBeDone1_X2 + loadValue1) * 10 / 16).toFixed(1)})</div>`;
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 1;">&nbsp;</div>';
 
-if (timeDifferenceRemaining > 0) {
-    conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 30%; width: 28.33%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
-}
+// Check if screen flash is on
+database.ref('settings/Flash').once('value').then(snapshot => {
+            const flashValue = snapshot.val();
+            if (flashValue === 1 && timeDifferenceRemaining > 0) {
+                conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 30%; width: 28.33%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
+            }
+        });
 
 }
         function startCountdown() {
@@ -951,6 +955,30 @@ function parseDate(dateString) {
             const totalLapTime = lastXLaps.reduce((total, lapData) => total + lapData.lapTime, 0);
             return lastXLaps.length > 0 ? totalLapTime / lastXLaps.length / 1000 : 0;
         }
+        function calculateWeightedAverageTime(lapTimes) {
+    if (lapTimes.length === 0) return 0;
+
+    // Sort lap times in ascending order
+    const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
+
+    // Weight the 5 shortest laps more heavily
+    const weights = sortedLapTimes.map((lap, index) => (index < 5 ? 2 : 1));
+
+    // Calculate the weighted average
+    const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+    const weightedLapTimeSum = sortedLapTimes.reduce((total, lap, index) => total + lap.lapTime * weights[index], 0);
+
+    return weightedLapTimeSum / totalWeight / 1000; // Convert milliseconds to seconds
+}
+
+// Example usage to calculate the estimated next time
+function getEstimatedNextTimeWeighted(lapTimes) {
+    if (lapTimes.length === 0) return null;
+
+    const averageTime = calculateWeightedAverageTime(lapTimes);
+    const newestLapTime = parseDate(getNewestLapTime(lapTimes));
+    return new Date(newestLapTime + averageTime * 1000);
+}
         function getNewestLapTime(lapTimes) {
             if (lapTimes.length > 0) {
                 return lapTimes[lapTimes.length - 1].timeOfDay;
@@ -1560,6 +1588,8 @@ function pullLapsFromFirebase(conveyor, lapTimesArray, lapCount) {
         console.error('Error pulling laps from Firebase:', error);
     });
 }
+  // Simulate a click on the "Pull Laps" button 1 seconds after page load
+  setTimeout(simulatePullLapsButtonClick, 1000);
 </script>
 </body>
 </html>
