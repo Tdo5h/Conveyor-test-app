@@ -782,25 +782,29 @@ database.ref('settings/Flash').once('value').then(snapshot => {
 
     // Function to flash the blackout screen
     function flashBlackoutScreen() {
-        blackoutScreen.style.display = 'block';
-        setTimeout(() => {
-            blackoutScreen.style.display = 'none';
-        }, 1000); // Flash for 1 second
+        const blackoutScreen = document.getElementById('blackoutScreen');
+        if (blackoutScreen) {
+            blackoutScreen.style.display = 'block';
+            setTimeout(() => {
+                blackoutScreen.style.display = 'none';
+            }, 1000); // Flash for 1 second
+        }
     }
 
     // Function to calculate the estimated next time for a conveyor
-    function getEstimatedNextTime(lapTimes, avgLaps) {
-        if (lapTimes.length > 0) {
-            return new Date(parseDate(getNewestLapTime(lapTimes)) + calculateAverageTimeX(lapTimes, avgLaps) * 1000);
-        }
-        return null;
+    function getEstimatedNextTimeWeighted(lapTimes) {
+        if (lapTimes.length === 0) return null;
+
+        const averageTime = calculateWeightedAverageTime(lapTimes);
+        const newestLapTime = parseDate(getNewestLapTime(lapTimes));
+        return new Date(newestLapTime + averageTime * 1000);
     }
 
     // Function to update the countdown timer
     function updateCountdownTimer() {
         const now = new Date();
-        const estNextTime1 = getEstimatedNextTime(lapTimes1, conveyor1AvgLaps);
-        const estNextTime2 = getEstimatedNextTime(lapTimes2, conveyor2AvgLaps);
+        const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
+        const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
 
         if (estNextTime1) {
             const timeDifference1 = (estNextTime1 - now) / 1000; // in seconds
@@ -810,7 +814,10 @@ database.ref('settings/Flash').once('value').then(snapshot => {
             } else if (timeDifference1 > 600) {
                 hasFlashed1 = false; // Reset the flag if more than 10 minutes
             }
-            document.getElementById('countdownDisplay1').textContent = formatTime(timeDifference1);
+            const countdownDisplay1 = document.getElementById('countdownDisplay1');
+            if (countdownDisplay1) {
+                countdownDisplay1.textContent = formatTime(timeDifference1);
+            }
         }
 
         if (estNextTime2) {
@@ -821,7 +828,10 @@ database.ref('settings/Flash').once('value').then(snapshot => {
             } else if (timeDifference2 > 600) {
                 hasFlashed2 = false; // Reset the flag if more than 10 minutes
             }
-            document.getElementById('countdownDisplay2').textContent = formatTime(timeDifference2);
+            const countdownDisplay2 = document.getElementById('countdownDisplay2');
+            if (countdownDisplay2) {
+                countdownDisplay2.textContent = formatTime(timeDifference2);
+            }
         }
     }
 
@@ -892,99 +902,106 @@ database.ref('settings/Flash').once('value').then(snapshot => {
         return lastXLaps.length > 0 ? totalLapTime / lastXLaps.length / 1000 : 0;
     }
 
-        function getFormattedTime() {
-            const now = new Date();
-            const day = now.getDate();
-            const month = now.getMonth() + 1; // Months are 0-based, so add 1
-            const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const ampm = hours >= 12 ? 'pm' : 'am';
-            const formattedTime = `${formattedDate} ${hours % 12}:${(minutes < 10 ? '0' : '') + minutes} ${ampm}`;
-            return formattedTime;
-        }
-// Function to parse a date string in the format day/month
-function parseDate(dateString) {
-    const [datePart, timePart, ampm] = dateString.split(' ');
-    const [day, month] = datePart.split('/').map(Number);
-    const now = new Date();
-    const year = now.getFullYear();
-    const formattedDate = `${month}/${day}/${year} ${timePart} ${ampm}`;
-    return Date.parse(formattedDate);
-}
-        function calculateAverageTime(lapTimes) {
+    function getFormattedTime() {
+        const now = new Date();
+        const day = now.getDate();
+        const month = now.getMonth() + 1; // Months are 0-based, so add 1
+        const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        const formattedTime = `${formattedDate} ${hours % 12}:${(minutes < 10 ? '0' : '') + minutes} ${ampm}`;
+        return formattedTime;
+    }
+
+    function calculateAverageTime(lapTimes) {
         const totalLapTime = lapTimes.reduce((total, lapData) => total + lapData.lapTime, 0);
         const numLaps = lapTimes.length;
         return numLaps > 0 ? totalLapTime / numLaps / 1000 : 0;
     }
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchSettingsFromFirebase();
-            listenForSettingsChanges(); // Start listening for real-time changes
-            // Add event listener for the enable lap buttons
-            const enableLapButtons = document.getElementById('enableLapButtons');
-            if (enableLapButtons) {
-                enableLapButtons.addEventListener('click', () => {
-                    const password = document.getElementById('lapPassword').value;
-                    const correctPassword = 'W0rdpass'; // Replace with your actual password
-                    if (password === correctPassword) {
-                        document.getElementById('recordLap1').disabled = false;
-                        document.getElementById('recordLap2').disabled = false;
-                        alert('Lap buttons enabled');
-                    } else {
-                        alert('Incorrect password');
-                    }
-                });
-           
-            }
-            // Initially disable the lap buttons
-            document.getElementById('recordLap1').disabled = true;
-            document.getElementById('recordLap2').disabled = true;
-        });
-        function calculateAverageTimeX2(lapTimes) {
-            const lastTwoLaps = lapTimes.slice(-2);
-            const totalLapTime = lastTwoLaps.reduce((total, lapData) => total + lapData.lapTime, 0);
-            return lastTwoLaps.length > 0 ? totalLapTime / lastTwoLaps.length / 1000 : 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchSettingsFromFirebase();
+        listenForSettingsChanges(); // Start listening for real-time changes
+
+        // Add event listener for the enable lap buttons
+        const enableLapButtons = document.getElementById('enableLapButtons');
+        if (enableLapButtons) {
+            enableLapButtons.addEventListener('click', () => {
+                const password = document.getElementById('lapPassword').value;
+                const correctPassword = 'W0rdpass'; // Replace with your actual password
+                if (password === correctPassword) {
+                    document.getElementById('recordLap1').disabled = false;
+                    document.getElementById('recordLap2').disabled = false;
+                    alert('Lap buttons enabled');
+                } else {
+                    alert('Incorrect password');
+                }
+            });
         }
-        function calculateAverageTimeX4(lapTimes) {
-            const lastFourLaps = lapTimes.slice(-4);
-            const totalLapTime = lastFourLaps.reduce((total, lapData) => total + lapData.lapTime, 0);
-            return lastFourLaps.length > 0 ? totalLapTime / lastFourLaps.length / 1000 : 0;
+
+        // Initially disable the lap buttons
+        document.getElementById('recordLap1').disabled = true;
+        document.getElementById('recordLap2').disabled = true;
+
+        // Simulate a click on the "Pull Laps" button 2 seconds after page load
+        setTimeout(simulatePullLapsButtonClick, 2000);
+    });
+
+    function calculateAverageTimeX2(lapTimes) {
+        const lastTwoLaps = lapTimes.slice(-2);
+        const totalLapTime = lastTwoLaps.reduce((total, lapData) => total + lapData.lapTime, 0);
+        return lastTwoLaps.length > 0 ? totalLapTime / lastTwoLaps.length / 1000 : 0;
+    }
+
+    function calculateAverageTimeX4(lapTimes) {
+        const lastFourLaps = lapTimes.slice(-4);
+        const totalLapTime = lastFourLaps.reduce((total, lapData) => total + lapData.lapTime, 0);
+        return lastFourLaps.length > 0 ? totalLapTime / lastFourLaps.length / 1000 : 0;
+    }
+
+    function calculateWeightedAverageTime(lapTimes) {
+        if (lapTimes.length === 0) return 0;
+
+        // Sort lap times in ascending order
+        const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
+
+        // Weight the 5 shortest laps more heavily
+        const weights = sortedLapTimes.map((lap, index) => (index < 5 ? 2 : 1));
+
+        // Calculate the weighted average
+        const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+        const weightedLapTimeSum = sortedLapTimes.reduce((total, lap, index) => total + lap.lapTime * weights[index], 0);
+
+        return weightedLapTimeSum / totalWeight / 1000; // Convert milliseconds to seconds
+    }
+
+    // Example usage to calculate the estimated next time
+    function getEstimatedNextTimeWeighted(lapTimes) {
+        if (lapTimes.length === 0) return null;
+
+        const averageTime = calculateWeightedAverageTime(lapTimes);
+        const newestLapTime = parseDate(getNewestLapTime(lapTimes));
+        return new Date(newestLapTime + averageTime * 1000);
+    }
+
+    // Function to simulate a click on the "Pull Laps" button
+    function simulatePullLapsButtonClick() {
+        const pullLapsButton = document.getElementById('pullLaps');
+        if (pullLapsButton) {
+            pullLapsButton.click();
+        } else {
+            console.error('Pull Laps button not found');
         }
-        function calculateAverageTimeX(lapTimes, x) {
-            const lastXLaps = lapTimes.slice(-x);
-            const totalLapTime = lastXLaps.reduce((total, lapData) => total + lapData.lapTime, 0);
-            return lastXLaps.length > 0 ? totalLapTime / lastXLaps.length / 1000 : 0;
+    }
+
+    // Function to get the newest lap time
+    function getNewestLapTime(lapTimes) {
+        if (lapTimes.length > 0) {
+            return lapTimes[lapTimes.length - 1].timeOfDay;
         }
-        function calculateWeightedAverageTime(lapTimes) {
-    if (lapTimes.length === 0) return 0;
-
-    // Sort lap times in ascending order
-    const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
-
-    // Weight the 5 shortest laps more heavily
-    const weights = sortedLapTimes.map((lap, index) => (index < 5 ? 2 : 1));
-
-    // Calculate the weighted average
-    const totalWeight = weights.reduce((total, weight) => total + weight, 0);
-    const weightedLapTimeSum = sortedLapTimes.reduce((total, lap, index) => total + lap.lapTime * weights[index], 0);
-
-    return weightedLapTimeSum / totalWeight / 1000; // Convert milliseconds to seconds
-}
-
-// Example usage to calculate the estimated next time
-function getEstimatedNextTimeWeighted(lapTimes) {
-    if (lapTimes.length === 0) return null;
-
-    const averageTime = calculateWeightedAverageTime(lapTimes);
-    const newestLapTime = parseDate(getNewestLapTime(lapTimes));
-    return new Date(newestLapTime + averageTime * 1000);
-}
-        function getNewestLapTime(lapTimes) {
-            if (lapTimes.length > 0) {
-                return lapTimes[lapTimes.length - 1].timeOfDay;
-            }
-            return null;
-        }
+        return null;
+    }
 
         document.getElementById('startConveyor1').addEventListener('click', () => {
     const button = document.getElementById('startConveyor1');
