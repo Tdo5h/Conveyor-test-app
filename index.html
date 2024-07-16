@@ -1319,6 +1319,54 @@ function pullLapsFromFirebase(conveyor, lapTimesArray, lapCount) {
         console.error('Error pulling laps from Firebase:', error);
     });
 }
+  // Function to toggle the toggleSwitch value in Firebase
+  function toggleSwitchFlash() {
+        database.ref('settings/toggleSwitch').set(1);
+        setTimeout(() => {
+            database.ref('settings/toggleSwitch').set(0);
+            setTimeout(() => {
+                database.ref('settings/toggleSwitch').set(1);
+                setTimeout(() => {
+                    database.ref('settings/toggleSwitch').set(0);
+                }, 1000); // 1 second
+            }, 1000); // 1 second
+        }, 1000); // 1 second
+    }
+
+    // Function to check if the current time is within 10 minutes of the estimated next lap time
+    function checkTimeAndToggle(conveyor, lapTimes, averageLapTime) {
+        if (lapTimes.length > 0) {
+            const estNextTime = new Date(parseDate(lapTimes[lapTimes.length - 1].timeOfDay) + averageLapTime * 1000);
+            const timeDifference = (estNextTime - Date.now()) / 1000; // in seconds
+            if (timeDifference <= 600 && timeDifference >= 0) { // 10 minutes in seconds
+                toggleSwitchFlash();
+            }
+        }
+    }
+
+    // Listen for changes in the flash value in Firebase
+    database.ref('settings/flash').on('value', (snapshot) => {
+        const value = snapshot.val();
+        if (value === 1) {
+            // Check lap times and toggle switch if needed
+            checkTimeAndToggle('conveyor1', lapTimes1, calculateAverageTime(lapTimes1));
+            checkTimeAndToggle('conveyor2', lapTimes2, calculateAverageTime(lapTimes2));
+        }
+    });
+
+    // Function to reset the flash value in Firebase at 5:15 AM and PM
+    function resetFlashValue() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        if ((hours === 5 || hours === 17) && minutes === 15) {
+            database.ref('settings/flash').set(0);
+        }
+    }
+
+    // Check every minute if it's time to reset the flash value
+    setInterval(resetFlashValue, 60000); // 60,000 milliseconds = 1 minute
+
 </script>
 </body>
 </html>
