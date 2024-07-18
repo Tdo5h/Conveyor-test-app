@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -191,6 +192,7 @@ button {
 </head>
 <body>
 <div class="content">
+    <button id="enableSoundButton" style="display: block;">Enable Sound</button>
     <h1 id="conveyorCalculator" style="font-size: 2.2rem; display: none;">Conveyor Calculator</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <button id="startConveyor2" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px;margin-right: 20px;">START CONVEYOR 2</button>
@@ -206,7 +208,7 @@ button {
 <button id="pullLaps" style="display: none; border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px; position: absolute; top: 0; right: 0;">Pull Laps</button>
         </div>              
     </div>
-    
+    <button id="playSoundButton" style="display: none;" onclick="playSound()">Play Sound</button>
     <div id="settingsPopup" class="popup" style="display: none;">
         <div class="popup-content">
             <!-- ... existing code ... -->
@@ -304,6 +306,7 @@ button {
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="blackoutScreen"></div>
     <img src="qr-code.png" alt="QR Code" class="qr-code">
+    
     <div id="topClock"style="padding: 15px;></div>
 </div>
 
@@ -717,7 +720,7 @@ conveyor1StatsDiv.innerHTML += `<div class="green" style="display: none; font-fa
 conveyor1StatsDiv.innerHTML += '<div style="line-height: 1;">&nbsp;</div>';
 
 // Check if screen flash is on
-database.ref('settings/Flash').once('value').then(snapshot => {
+database.ref('settings/TimeToShiftEnd').once('value').then(snapshot => {
             const flashValue = snapshot.val();
             if (flashValue === 1 && timeDifferenceRemaining > 0) {
                 conveyor1StatsDiv.innerHTML += `<div id="countdownDisplay" class="red bold" style="font-family: Arial, sans-serif; font-size: 1em; position: fixed; bottom: 0; left: 30%; width: 28.33%; text-align: center;">Time to Shift Change: ${formatTime(timeDifferenceRemaining % 43200)}</div>`;
@@ -725,18 +728,21 @@ database.ref('settings/Flash').once('value').then(snapshot => {
         });
 
 }
-        function startCountdown() {
+function startCountdown() {
             clearInterval(countdownInterval);
             countdownInterval = setInterval(function() {
                 if (timeDifferenceRemaining > 0) {
                     timeDifferenceRemaining--;
+
                     displayStats();
                 } else {
                     // Reset the timer to 12 hours at 5:15
                     const now = new Date();
                     const resetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 15);
                     if (now >= resetTime) {
+
                         resetTime.setDate(resetTime.getDate() + 1);
+
                     }
                     timeDifferenceRemaining = (resetTime.getTime() - now.getTime()) / 1000;
                     displayStats();
@@ -748,7 +754,7 @@ database.ref('settings/Flash').once('value').then(snapshot => {
 
         // Function to update blackout screen based on Firebase value
         function updateBlackoutScreen(value) {
-            if (value === 1) {
+            if (value === 0) {
                 blackoutScreen.style.display = 'block';
                 blackoutCheckbox.checked = true;
             } else {
@@ -760,6 +766,7 @@ database.ref('settings/Flash').once('value').then(snapshot => {
         // Read the initial value from Firebase
         database.ref('settings/toggleSwitch').once('value').then(snapshot => {
             const value = snapshot.val();
+
             updateBlackoutScreen(value);
         });
 
@@ -770,39 +777,160 @@ database.ref('settings/Flash').once('value').then(snapshot => {
         });
 
         // Update Firebase when the checkbox is changed
+
         if (blackoutCheckbox) {
             blackoutCheckbox.addEventListener('change', (event) => {
                 const value = event.target.checked ? 1 : 0;
                 database.ref('settings/toggleSwitch').set(value);
+
             });
         }
 
-        // Function to turn 0 to 1 at 5:15 am and pm
-        function turnZeroToOneAt515() {
+        // Function to reset settings at 5:15 AM and PM
+        function resetSettingsAt515() {
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
-            if ((hours === 5 || hours === 17) && minutes === 15) {
-                database.ref('settings/toggleSwitch').set(1);
+
+            if (minutes === 15 && (hours === 5 || hours === 17)) {
+                // Reset sound settings for con1 and con2 to 0
+                database.ref('settings/sound/con1').set(0, (error) => {
+                    if (error) {
+                        console.error('Failed to reset con1 sound setting in Firebase:', error);
+                    } else {
+                        console.log('con1 sound setting reset to 0 in Firebase.');
+                    }
+                });
+
+                database.ref('settings/sound/con2').set(0, (error) => {
+
+                    if (error) {
+                        console.error('Failed to reset con2 sound setting in Firebase:', error);
+                    } else {
+                        console.log('con2 sound setting reset to 0 in Firebase.');
+                    }
+                });
+
+                // Change blackout screen to 1
+                database.ref('settings/toggleSwitch').set(1, (error) => {
+                    if (error) {
+
+                        console.error('Failed to set toggleSwitch to 1 in Firebase:', error);
+                    } else {
+                        console.log('toggleSwitch set to 1 in Firebase.');
+                    }
+                });
             }
         }
 
-        // Check every minute to turn 0 to 1 at 5:15 am and pm
-        setInterval(turnZeroToOneAt515, 60000);
+        // Check every minute to reset settings at 5:15 AM and PM
+        setInterval(resetSettingsAt515, 60000);
      
-    let hasFlashed1 = false;
-    let hasFlashed2 = false;
+   
+        let timerValue; // No default value, will be set from Firebase
 
-    // Function to flash the blackout screen
-    function flashBlackoutScreen() {
-        const blackoutScreen = document.getElementById('blackoutScreen');
-        if (blackoutScreen) {
-            blackoutScreen.style.display = 'block';
-            setTimeout(() => {
-                blackoutScreen.style.display = 'none';
-            }, 1000); // Flash for 1 second
+// Listen for changes in the timer value in real-time
+database.ref('settings/timer').on('value', (snapshot) => {
+    timerValue = snapshot.val();
+    console.log('Timer value updated:', timerValue);
+});
+
+// Function to play the sound
+function playSound() {
+    const audio = new Audio('sound1.mp3');
+    audio.play().then(() => {
+        console.log('Sound played successfully');
+    }).catch(error => {
+        console.error('Error playing sound:', error);
+    });
+}
+
+// Function to trigger the sound by clicking the hidden button
+function triggerSound(conveyor) {
+    const playSoundButton = document.getElementById('playSoundButton');
+    if (playSoundButton) {
+        // Check Firebase setting before triggering sound
+        database.ref(`settings/sound/${conveyor}`).once('value').then(snapshot => {
+            if (snapshot.val() === 1) {
+                playSoundButton.click();
+            }
+        });
+    }
+}
+
+// Listen for changes in the sound setting for Conveyor 1
+let soundPlayedCon1 = false; // Track if the sound has been played for Conveyor 1
+database.ref('settings/sound/con1').on('value', (snapshot) => {
+    const value = snapshot.val();
+    if (value === 1 && !soundPlayedCon1) {
+        triggerSound('con1');
+        soundPlayedCon1 = true; // Mark that the sound has been played for Conveyor 1
+    } else if (value === 0) {
+        soundPlayedCon1 = false; // Reset the flag when the value changes to 0
+    }
+});
+
+// Listen for changes in the sound setting for Conveyor 2
+let soundPlayedCon2 = false; // Track if the sound has been played for Conveyor 2
+database.ref('settings/sound/con2').on('value', (snapshot) => {
+    const value = snapshot.val();
+    if (value === 1 && !soundPlayedCon2) {
+        triggerSound('con2');
+        soundPlayedCon2 = true; // Mark that the sound has been played for Conveyor 2
+    } else if (value === 0) {
+        soundPlayedCon2 = false; // Reset the flag when the value changes to 0
+    }
+});
+
+// Enable sound playback after user interaction
+document.getElementById('enableSoundButton').addEventListener('click', () => {
+    // Hide the enable sound button
+    document.getElementById('enableSoundButton').style.display = 'none';
+
+    // Now the user has interacted with the page, we can play sounds
+    triggerSound('con1');
+    triggerSound('con2');
+});
+
+// Function to update the countdown timer
+function updateCountdownTimer() {
+    if (timerValue === undefined) return; // Exit if timerValue is not set
+
+    const now = new Date();
+    const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
+    const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
+
+    if (estNextTime1) {
+        const timeDifference1 = (estNextTime1 - now) / 1000; // in seconds
+        if (timeDifference1 <= timerValue && timeDifference1 > 0 && !hasFlashed1) {
+            triggerSound('con1');
+            hasFlashed1 = true;
+        } else if (timeDifference1 > timerValue) {
+            hasFlashed1 = false; // Reset the flag if more than timer value
+        }
+        const countdownDisplay1 = document.getElementById('countdownDisplay1');
+        if (countdownDisplay1) {
+            countdownDisplay1.textContent = formatTime(timeDifference1);
         }
     }
+
+    if (estNextTime2) {
+        const timeDifference2 = (estNextTime2 - now) / 1000; // in seconds
+        if (timeDifference2 <= timerValue && timeDifference2 > 0 && !hasFlashed2) {
+            triggerSound('con2');
+            hasFlashed2 = true;
+        } else if (timeDifference2 > timerValue) {
+            hasFlashed2 = false; // Reset the flag if more than timer value
+        }
+        const countdownDisplay2 = document.getElementById('countdownDisplay2');
+        if (countdownDisplay2) {
+            countdownDisplay2.textContent = formatTime(timeDifference2);
+        }
+    }
+}
+
+// Update the countdown timer every second
+setInterval(updateCountdownTimer, 1000);
 
     // Function to calculate the estimated next time for a conveyor
     function getEstimatedNextTimeWeighted(lapTimes) {
@@ -822,7 +950,7 @@ database.ref('settings/Flash').once('value').then(snapshot => {
         if (estNextTime1) {
             const timeDifference1 = (estNextTime1 - now) / 1000; // in seconds
             if (timeDifference1 <= 600 && timeDifference1 > 0 && !hasFlashed1) { // 10 minutes in seconds
-                flashBlackoutScreen();
+                triggerSound();
                 hasFlashed1 = true;
             } else if (timeDifference1 > 600) {
                 hasFlashed1 = false; // Reset the flag if more than 10 minutes
@@ -836,7 +964,7 @@ database.ref('settings/Flash').once('value').then(snapshot => {
         if (estNextTime2) {
             const timeDifference2 = (estNextTime2 - now) / 1000; // in seconds
             if (timeDifference2 <= 600 && timeDifference2 > 0 && !hasFlashed2) { // 10 minutes in seconds
-                flashBlackoutScreen();
+                triggerSound();
                 hasFlashed2 = true;
             } else if (timeDifference2 > 600) {
                 hasFlashed2 = false; // Reset the flag if more than 10 minutes
@@ -847,33 +975,6 @@ database.ref('settings/Flash').once('value').then(snapshot => {
             }
         }
     }
-
-    // Function to reset Flash value at 5:15 am and pm
-    function resetFlashValue() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-
-        if (minutes === 15 && (hours === 5 || hours === 17)) {
-            database.ref('settings/Flash').once('value').then(snapshot => {
-                const value = snapshot.val();
-                if (value === 1) {
-                    database.ref('settings/Flash').set(0);
-                }
-            });
-        }
-    }
-
-    // Listen for changes in the Flash value
-    database.ref('settings/Flash').on('value', (snapshot) => {
-        const value = snapshot.val();
-        if (value === 1) {
-            updateCountdownTimer();
-        }
-    });
-
-    // Check and reset Flash value every minute
-    setInterval(resetFlashValue, 60000);
 
     // Update the countdown timer every second
     setInterval(updateCountdownTimer, 1000);
@@ -974,20 +1075,20 @@ database.ref('settings/Flash').once('value').then(snapshot => {
     }
 
     function calculateWeightedAverageTime(lapTimes) {
-        if (lapTimes.length === 0) return 0;
+    if (lapTimes.length === 0) return 0;
 
-        // Sort lap times in ascending order
-        const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
+    // Sort lap times in ascending order
+    const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
 
-        // Weight the 5 shortest laps more heavily
-        const weights = sortedLapTimes.map((lap, index) => (index < 5 ? 2 : 1));
+    // Weight the 2nd lap more heavily
+    const weights = sortedLapTimes.map((lap, index) => (index === 1 ? 20 : 1)); // Weight of 20 for the 2nd lap, 1 for the rest
 
-        // Calculate the weighted average
-        const totalWeight = weights.reduce((total, weight) => total + weight, 0);
-        const weightedLapTimeSum = sortedLapTimes.reduce((total, lap, index) => total + lap.lapTime * weights[index], 0);
+    // Calculate the weighted average
+    const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+    const weightedLapTimeSum = sortedLapTimes.reduce((total, lap, index) => total + lap.lapTime * weights[index], 0);
 
-        return weightedLapTimeSum / totalWeight / 1000; // Convert milliseconds to seconds
-    }
+    return weightedLapTimeSum / totalWeight / 1000; // Convert milliseconds to seconds
+}
 
     // Example usage to calculate the estimated next time
     function getEstimatedNextTimeWeighted(lapTimes) {
@@ -1211,9 +1312,9 @@ document.getElementById('setTime').addEventListener('click', () => {
 
 document.getElementById('pullLaps').addEventListener('click', () => {
     // Retrieve 8 laps from Firebase for Conveyor 1
-    pullAndDisplay('conveyor1', lapTimes1, 8);
+    pullAndDisplay('conveyor1', lapTimes1, 10);
     // Retrieve 8 laps from Firebase for Conveyor 2
-    pullAndDisplay('conveyor2', lapTimes2, 8);
+    pullAndDisplay('conveyor2', lapTimes2, 10);
 
     // Wait 10 seconds before resetting Irregulars to 0 in Firebase
     setTimeout(() => {
@@ -1421,7 +1522,7 @@ function handleIrregularsChange(value) {
         });
 
         // Pull 8 laps as done on button click
-        const lapCount = 8;
+        const lapCount = 9;
         pullAndDisplay('conveyor1', lapTimes1, lapCount, () => {
             lapStart1 = Date.now();
             running1 = true;
