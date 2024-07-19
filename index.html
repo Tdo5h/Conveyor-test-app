@@ -181,7 +181,7 @@ button {
 </head>
 <body>
 <div class="content">
-    <button id="enableSoundButton" style="display: block;">Enable Sound</button>
+   
     <h1 id="conveyorCalculator" style="font-size: 2.2rem; display: none;">Conveyor Calculator</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <button id="startConveyor2" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px;margin-right: 20px;">START CONVEYOR 2</button>
@@ -199,7 +199,6 @@ button {
 <button id="pullLaps" style="display: none; border: 1px solid black; border-radius: 5px; margin-left: auto; margin-top: 10px; position: absolute; top: 0; right: 0;">Pull Laps</button>
         </div>              
     </div>
-    <button id="playSoundButton" style="display: block;" onclick="playSound()">Play Sound</button>
     <div id="settingsPopup" class="popup" style="display: none;">
         <div class="popup-content">
             <!-- ... existing code ... -->
@@ -296,7 +295,6 @@ button {
     <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="blackoutScreen"></div>
-    <button id="playSoundButton" style="display: none;" onclick="playSound()">Play Sound</button>
     <img src="qr-code.png" alt="QR Code" class="qr-code">
 
     <div id="topClock"style="padding: 15px;></div>
@@ -767,157 +765,7 @@ function startCountdown() {
         setInterval(resetSettingsAt515, 60000);
 
 
-        let timerValue; // No default value, will be set from Firebase
-
-// Listen for changes in the timer value in real-time
-database.ref('settings/timer').on('value', (snapshot) => {
-    timerValue = snapshot.val();
-    console.log('Timer value updated:', timerValue);
-});
-
-// Function to play the sound
-function playSound() {
-    const audio = new Audio('sound1.mp3');
-    audio.play().then(() => {
-        console.log('Sound played successfully');
-    }).catch(error => {
-        console.error('Error playing sound:', error);
-    });
-}
-
-// Function to trigger the sound by clicking the hidden button
-function triggerSound(conveyor) {
-    const playSoundButton = document.getElementById('playSoundButton');
-    if (playSoundButton) {
-        // Check Firebase setting before triggering sound
-        database.ref(`settings/sound/${conveyor}`).once('value').then(snapshot => {
-            if (snapshot.val() === 1) {
-                playSoundButton.click();
-            }
-        });
-    }
-}
-
-// Listen for changes in the sound setting for Conveyor 1
-let soundPlayedCon1 = false; // Track if the sound has been played for Conveyor 1
-database.ref('settings/sound/con1').on('value', (snapshot) => {
-    const value = snapshot.val();
-    if (value === 1 && !soundPlayedCon1) {
-        triggerSound('con1');
-        soundPlayedCon1 = true; // Mark that the sound has been played for Conveyor 1
-    } else if (value === 0) {
-        soundPlayedCon1 = false; // Reset the flag when the value changes to 0
-    }
-});
-
-// Listen for changes in the sound setting for Conveyor 2
-let soundPlayedCon2 = false; // Track if the sound has been played for Conveyor 2
-database.ref('settings/sound/con2').on('value', (snapshot) => {
-    const value = snapshot.val();
-    if (value === 1 && !soundPlayedCon2) {
-        triggerSound('con2');
-        soundPlayedCon2 = true; // Mark that the sound has been played for Conveyor 2
-    } else if (value === 0) {
-        soundPlayedCon2 = false; // Reset the flag when the value changes to 0
-    }
-});
-
-// Enable sound playback after user interaction
-document.getElementById('enableSoundButton').addEventListener('click', () => {
-    // Hide the enable sound button
-    document.getElementById('enableSoundButton').style.display = 'none';
-
-    // Now the user has interacted with the page, we can play sounds
-    triggerSound('con1');
-    triggerSound('con2');
-});
-
-// Function to update the countdown timer
-function updateCountdownTimer() {
-    if (timerValue === undefined) return; // Exit if timerValue is not set
-
-    const now = new Date();
-    const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
-    const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
-
-    if (estNextTime1) {
-        const timeDifference1 = (estNextTime1 - now) / 1000; // in seconds
-        if (timeDifference1 <= timerValue && timeDifference1 > 0 && !hasFlashed1) {
-            triggerSound('con1');
-            hasFlashed1 = true;
-        } else if (timeDifference1 > timerValue) {
-            hasFlashed1 = false; // Reset the flag if more than timer value
-        }
-        const countdownDisplay1 = document.getElementById('countdownDisplay1');
-        if (countdownDisplay1) {
-            countdownDisplay1.textContent = formatTime(timeDifference1);
-        }
-    }
-
-    if (estNextTime2) {
-        const timeDifference2 = (estNextTime2 - now) / 1000; // in seconds
-        if (timeDifference2 <= timerValue && timeDifference2 > 0 && !hasFlashed2) {
-            triggerSound('con2');
-            hasFlashed2 = true;
-        } else if (timeDifference2 > timerValue) {
-            hasFlashed2 = false; // Reset the flag if more than timer value
-        }
-        const countdownDisplay2 = document.getElementById('countdownDisplay2');
-        if (countdownDisplay2) {
-            countdownDisplay2.textContent = formatTime(timeDifference2);
-        }
-    }
-}
-
-// Update the countdown timer every second
-setInterval(updateCountdownTimer, 1000);
-
-    // Function to calculate the estimated next time for a conveyor
-    function getEstimatedNextTimeWeighted(lapTimes) {
-        if (lapTimes.length === 0) return null;
-
-        const averageTime = calculateWeightedAverageTime(lapTimes);
-        const newestLapTime = parseDate(getNewestLapTime(lapTimes));
-        return new Date(newestLapTime + averageTime * 1000);
-    }
-    // Function to update the countdown timer
-    function updateCountdownTimer() {
-        const now = new Date();
-        const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
-        const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
-        if (estNextTime1) {
-            const timeDifference1 = (estNextTime1 - now) / 1000; // in seconds
-            if (timeDifference1 <= 600 && timeDifference1 > 0 && !hasFlashed1) { // 10 minutes in seconds
-                triggerSound();
-                hasFlashed1 = true;
-            } else if (timeDifference1 > 600) {
-                hasFlashed1 = false; // Reset the flag if more than 10 minutes
-
-            }
-            const countdownDisplay1 = document.getElementById('countdownDisplay1');
-            if (countdownDisplay1) {
-                countdownDisplay1.textContent = formatTime(timeDifference1);
-            }
-        }
-        if (estNextTime2) {
-            const timeDifference2 = (estNextTime2 - now) / 1000; // in seconds
-            if (timeDifference2 <= 600 && timeDifference2 > 0 && !hasFlashed2) { // 10 minutes in seconds
-                triggerSound();
-                hasFlashed2 = true;
-            } else if (timeDifference2 > 600) {
-                hasFlashed2 = false; // Reset the flag if more than 10 minutes
-
-            }
-            const countdownDisplay2 = document.getElementById('countdownDisplay2');
-            if (countdownDisplay2) {
-                countdownDisplay2.textContent = formatTime(timeDifference2);
-            }
-        }
-    }
-
-    // Update the countdown timer every second
-    setInterval(updateCountdownTimer, 1000);
-
+     
     function calculateWorkToBeDone(averageTime, timeDifference) {
         return averageTime > 0 ? timeDifference / averageTime : 0;
     }
