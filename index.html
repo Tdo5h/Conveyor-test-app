@@ -750,7 +750,7 @@ function startCountdown() {
                 });
 
                 // Change blackout screen to 1
-                database.ref('settings/toggleSwitch').set(1, (error) => {
+                database.ref('settings/toggleSwitch').set(0, (error) => {
                     if (error) {
 
                         console.error('Failed to set toggleSwitch to 1 in Firebase:', error);
