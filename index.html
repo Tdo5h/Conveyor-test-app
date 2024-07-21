@@ -557,7 +557,7 @@ function updateClock() {
         if (lapTimes2.length > 0) {
             const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
             const estNextTimeStr2 = estNextTime2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-            conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 16px;">Est Next: ${estNextTimeStr2}</span></div>`;
+            conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 14px;">Est Next: ${estNextTimeStr2}</span></div>`;
         } else {
             conveyor2StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 2</div>`;
         }
@@ -627,7 +627,7 @@ const averageTime1 = calculateAverageTimeX(lapTimes1, conveyor1AvgLaps);
         if (lapTimes1.length > 0) {
             const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
             const estNextTimeStr1 = estNextTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-            conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 16px;">Est Next: ${estNextTimeStr1}</span></div>`;
+            conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1 <span style="float: right;font-size: 0.5em; position: relative; left: 5px; top: 14px;">Est Next: ${estNextTimeStr1}</span></div>`;
         } else {
             conveyor1StatsDiv.innerHTML += `<div class="black conveyor-header" style="font-family: Arial, sans-serif; font-size: 1.8em; position: absolute; top: 55px;">Conveyor 1</div>`;
         }
@@ -1078,14 +1078,14 @@ setInterval(updateCountdownTimer, 1000);
     if (lapTimes.length === 0) return 0;
 
     // Sort lap times in ascending order
-    const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
+    // const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
 
     // Weight the 2nd lap more heavily
-    const weights = sortedLapTimes.map((lap, index) => (index === 1 ? 20 : 1)); // Weight of 20 for the 2nd lap, 1 for the rest
+    const weights = lapTimes.map((lap, index) => (index === 1 ? 20 : 1)); // Weight of 20 for the 2nd lap, 1 for the rest
 
     // Calculate the weighted average
     const totalWeight = weights.reduce((total, weight) => total + weight, 0);
-    const weightedLapTimeSum = sortedLapTimes.reduce((total, lap, index) => total + lap.lapTime * weights[index], 0);
+    const weightedLapTimeSum = lapTimes.reduce((total, lap, index) => total + lap.lapTime * weights[index], 0);
 
     return weightedLapTimeSum / totalWeight / 1000; // Convert milliseconds to seconds
 }
