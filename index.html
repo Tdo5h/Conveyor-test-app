@@ -811,6 +811,7 @@ function startCountdown() {
                     }
                 });
 
+                           /* 
                 // Change blackout screen to 1
                 database.ref('settings/toggleSwitch').set(1, (error) => {
                     if (error) {
@@ -820,8 +821,7 @@ function startCountdown() {
                         console.log('toggleSwitch set to 1 in Firebase.');
                     }
                 });
-            }
-        }
+                */
 
         // Check every minute to reset settings at 5:15 AM and PM
         setInterval(resetSettingsAt515, 60000);
