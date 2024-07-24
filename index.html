@@ -811,17 +811,40 @@ function startCountdown() {
                     }
                 });
 
-                           /* 
-                // Change blackout screen to 1
-                database.ref('settings/toggleSwitch').set(1, (error) => {
-                    if (error) {
+                     // Function to reset settings at 5:15 AM and PM
+    function resetSettingsAt515() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
 
-                        console.error('Failed to set toggleSwitch to 1 in Firebase:', error);
-                    } else {
-                        console.log('toggleSwitch set to 1 in Firebase.');
-                    }
-                });
-                */
+        if (minutes === 15 && (hours === 5 || hours === 17)) {
+            // Reset sound settings for con1 and con2 to 0
+            database.ref('settings/sound/con1').set(0, (error) => {
+                if (error) {
+                    console.error('Failed to reset con1 sound setting in Firebase:', error);
+                } else {
+                    console.log('con1 sound setting reset to 0 in Firebase.');
+                }
+            });
+
+            database.ref('settings/sound/con2').set(0, (error) => {
+                if (error) {
+                    console.error('Failed to reset con2 sound setting in Firebase:', error);
+                } else {
+                    console.log('con2 sound setting reset to 0 in Firebase.');
+                }
+            });
+
+            // Change blackout screen to 1
+            database.ref('settings/toggleSwitch').set(1, (error) => {
+                if (error) {
+                    console.error('Failed to set toggleSwitch to 1 in Firebase:', error);
+                } else {
+                    console.log('toggleSwitch set to 1 in Firebase.');
+                }
+            });
+        }
+    }
 
         // Check every minute to reset settings at 5:15 AM and PM
         setInterval(resetSettingsAt515, 60000);
