@@ -1077,8 +1077,8 @@ setInterval(updateCountdownTimer, 1000);
     // Sort lap times in ascending order
     // const sortedLapTimes = lapTimes.slice().sort((a, b) => a.lapTime - b.lapTime);
 
-    // Weight the 2nd lap more heavily
-    const weights = lapTimes.map((lap, index) => (index === 1 ? 20 : 1)); // Weight of 20 for the 2nd lap, 1 for the rest
+     // Weight the 9th lap more heavily
+    const weights = lapTimes.map((lap, index) => (index === 8 ? 20 : 1)); // Weight of 20 for the 9th lap, 1 for the rest
 
     // Calculate the weighted average
     const totalWeight = weights.reduce((total, weight) => total + weight, 0);
