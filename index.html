@@ -850,7 +850,7 @@ database.ref('settings/timer').on('value', (snapshot) => {
         database.ref(`settings/sound/${conveyor}`).once('value').then(snapshot => {
             if (snapshot.val() === 1) {
                 console.log(`Sound setting for ${conveyor} is enabled. Playing sound.`);
-                const soundFile = conveyor === 'con2' ? 'sound2.mp3' : 'sound1.mp3';
+                const soundFile = conveyor === 'con2' ? 'sound4.mp3' : 'sound1.mp3';
                 playSound(soundFile);
             } else {
                 console.log(`Sound setting for ${conveyor} is not enabled.`);
