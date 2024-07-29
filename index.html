@@ -830,9 +830,9 @@ database.ref('settings/timer').on('value', (snapshot) => {
     console.log('Timer value updated:', timerValue);
 });
 
-       // Function to play the sound
-       function playSound() {
-        const audio = new Audio('sound1.mp3');
+   // Function to play the sound
+   function playSound(soundFile) {
+        const audio = new Audio(soundFile);
         audio.play().then(() => {
             console.log('Sound played successfully');
         }).catch(error => {
@@ -850,7 +850,8 @@ database.ref('settings/timer').on('value', (snapshot) => {
         database.ref(`settings/sound/${conveyor}`).once('value').then(snapshot => {
             if (snapshot.val() === 1) {
                 console.log(`Sound setting for ${conveyor} is enabled. Playing sound.`);
-                playSound();
+                const soundFile = conveyor === 'con2' ? 'sound2.mp3' : 'sound1.mp3';
+                playSound(soundFile);
             } else {
                 console.log(`Sound setting for ${conveyor} is not enabled.`);
             }
@@ -1424,6 +1425,9 @@ pullAndDisplay('conveyor2', lapTimes2, lapCount, () => {
 // Watch Firebase for new laps and pull them
 watchForNewLaps('conveyor1', lapTimes1);
 watchForNewLaps('conveyor2', lapTimes2);
+
+// Simulate a click on the "Pull Laps" button 2 seconds after page load
+setTimeout(simulatePullLapsButtonClick, 2000);
 });
 
 function pullAndDisplay(conveyor, lapTimesArray, count, callback) {
