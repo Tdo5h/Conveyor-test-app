@@ -810,7 +810,16 @@ function resetSettingsAt515() {
             }
         });
 
-        // Change blackout screen to 1
+        // Change TimeToShiftEnd to 0
+        database.ref('settings/TimeToShiftEnd').set(0, (error) => {
+            if (error) {
+                console.error('Failed to set TimeToShiftEnd to 0 in Firebase:', error);
+            } else {
+                console.log('TimeToShiftEnd set to 0 in Firebase.');
+            }
+        });
+
+        // Change blackout screen to 1 (if needed)
         // database.ref('settings/toggleSwitch').set(1, (error) => {
         //     if (error) {
         //         console.error('Failed to set toggleSwitch to 1 in Firebase:', error);
@@ -820,6 +829,9 @@ function resetSettingsAt515() {
         // });
     }
 }
+
+// Set an interval to call resetSettingsAt515 every minute
+setInterval(resetSettingsAt515, 60000);
 
 let timerValue; // No default value, will be set from Firebase
 let hasFlashed1 = false; // Track if the sound has been played for Conveyor 1
