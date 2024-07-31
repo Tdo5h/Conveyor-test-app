@@ -980,21 +980,6 @@ database.ref('settings/sound/con2').on('value', (snapshot) => {
 });
 
 let alertTime1 = 600; // Default value
-    let alertTime2 = 600; // Default value
-
-    // Listen for changes in the timer value in real-time
-    database.ref('settings/timer').on('value', (snapshot) => {
-        const timerValue = snapshot.val();
-        if (timerValue !== null) {
-            alertTime1 = timerValue;
-            alertTime2 = timerValue;
-            console.log('Alert times updated:', alertTime1, alertTime2);
-        } else {
-            console.error('Timer value not found in Firebase.');
-        }
-    });
-
-let alertTime1 = 600; // Default value
 let alertTime2 = 600; // Default value
 
 // Listen for changes in the timer value in real-time
