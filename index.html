@@ -24,94 +24,87 @@
         }
 
         .popup-content {
-    background-image: url('back2.jpg');
-    background-size: cover;
-    background-repeat: no-repeat; 
-    background-position: bottom right;  /* Adjust this line */
-    max-height: 400px; /* You can adjust this value as per your requirement */
-    overflow-y: auto;
-}
+            background-image: url('back2.jpg');
+            background-size: cover;
+            background-repeat: no-repeat; 
+            background-position: bottom right;
+            max-height: 400px;
+            overflow-y: auto;
+        }
 
-.lap-time {
-    background-color: rgba(0, 0, 0, 0.242); 
-}
+        .lap-time {
+            background-color: rgba(0, 0, 0, 0.242); 
+        }
 
-.popup-item {
-    font-size: 20px;
-    padding: 8px; /* Adjust the padding size as needed */
-}
-#deleteLapPopup button {
-    font-size: 17px;  /* Adjust as per your need */
-    padding: 7px 12px; /* Vertical and horizontal padding */
-    cursor: pointer; /* To change cursor to hand when hovering */
-    border: 1px solid black;
-    border-radius: 5px;
-}
+        .popup-item {
+            font-size: 20px;
+            padding: 8px;
+        }
 
+        #deleteLapPopup button {
+            font-size: 17px;
+            padding: 7px 12px;
+            cursor: pointer;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
 
         body {
             background-color: black;
-        }
-        body {
             background-image: url('background.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
             font-weight: bold;
         }
-         .bold { font-weight: bold; }
+
+        .bold { font-weight: bold; }
         .input-small { width: 6rem; }
         .red { color: red; }
         .green { color: green; }
         .blue { color: rgb(7, 7, 94); }
-         .purple { color: purple; }
+        .purple { color: purple; }
         .orange { color: orange; }
         .content {
             background-color: rgba(209, 209, 209, 0.7);
             padding: 20px;
             border-radius: 0px;
         }
-        
-        
-.lap-time {
-    background-color: rgba(0, 0, 0, 0.242); 
-}
-/* Add padding to the pop-up items */
-.popup-item {
-    font-size: 20px;
-    padding: 10px; /* Adjust the padding size as needed */
-}
+
+        .popup-item {
+            font-size: 20px;
+            padding: 10px;
+        }
+
         #recordLap1, #recordLap2 {
             width: auto;
             height: auto;
             font-size: 230%;
         }
-    
 
-        /* Increase the size of Conveyor headers by 50% */
         .conveyor-header {
-        font-size: 180%;
+            font-size: 180%;
         }
 
-/* Style for the pop-up window */
-.popup {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.242); /* Darker background for better readability */
-        z-index: 2000; /* Ensure it stays above the QR code */
-        color: rgb(0, 0, 0); /* White text color for better readability */
-        font-size: 1.2em; /* Slightly larger font size for better readability */
-    }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.242);
+            z-index: 2000;
+            color: rgb(0, 0, 0);
+            font-size: 1.2em;
+        }
 
-button {
-    color: rgb(0, 0, 0);
-    background-color: white;
-}
-#blackoutScreen {
+        button {
+            color: rgb(0, 0, 0);
+            background-color: white;
+        }
+
+        #blackoutScreen {
             display: none;
             position: fixed;
             top: 0;
@@ -119,81 +112,136 @@ button {
             width: 100%;
             height: 100%;
             background-color: black;
-            z-index: 9999; /* Ensure it covers everything */
+            z-index: 9999;
         }
-#countdownDisplay {
-        position: fixed;   /* Ensure it stays fixed in the viewport */
-        bottom: 0;         /* Positions it at the bottom of the viewport */
-        left: 33.33%;      /* Aligns it one third in from the left side */
-        width: 33.33%;     /* Makes it span one third of the viewport width */
-        color: rgb(0, 0, 0);      /* Black text color for visibility */
-      
-        padding: 10px 0;   /* Adds some vertical padding */
-    }
-   
-    #conveyorCalculator {
-   
-    top: 0;                /* Positions it at the top of the viewport */
-    left: 0;               /* Start from the very left edge of the viewport */
-    width: 100%;           /* Makes it span the full width of the viewport */
-    text-align: center;    /* Center-aligns the text */
-   
-    color: rgb(0, 0, 0);       /* White text color for visibility */
-    padding: 10px 0;       /* Adds some vertical padding */
-    box-sizing: border-box;/* Ensures that padding and border are included in the total width and height */
-    z-index: 1000;         /* Ensures it stays above other elements */
-}
-#topClock {
+
+        #countdownDisplay {
+            position: fixed;
+            bottom: 0;
+            left: 33.33%;
+            width: 33.33%;
+            color: rgb(0, 0, 0);
+            padding: 10px 0;
+        }
+
+        #conveyorCalculator {
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: rgb(0, 0, 0);
+            padding: 10px 0;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        #topClock {
             position: fixed;
             top: 0;
-            left: 27%; /* 30% left of center */
+            left: 27%;
             width: 37%;
             text-align: center;
             font-size: 2.3em;
-            font-family: Arial, sans-serif; /* Set the font family */
-            z-index: 1001; /* Ensure it stays above other elements */
+            font-family: Arial, sans-serif;
+            z-index: 1001;
         }
-   /* ... existing code ... */
-   .qr-code {
+
+        .qr-code {
+            position: fixed;
+            bottom: 2px;
+            right: 2px;
+            transform: scale(0.7);
+            z-index: 1;
+            background-color: transparent;
+            border-radius: 15px;
+            padding: 20;
+        }
+
+        .popup-content {
+            background-color: white;
+            width: 80%;
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #closeSettings {
+            background-color: #ccc;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            float: right;
+        }
+
+        #progressContainer1 {
     position: fixed;
-    bottom: 2px; /* Give 10px from the bottom of the screen */
-    right: 2px;  /* Give 10px from the right side of the screen */
-    transform: scale(0.7); /* Scale down to 20% of its original size */
-    z-index: 1; /* Ensure it stays behind other elements */
-    background-color: transparent; /* Set background to transparent */
-    border-radius: 15px; /* Adjust the value to round the corners */
-    padding: 20; /* Ensure no padding */
-    
+    top: 30px; /* 30px from the top */
+    right: 15.2%; /* Adjust left position as needed */
+    width: 23%; /* Adjust width as needed */
+    height: 10px; /* Adjust height as needed */
+    background-color: rgba(136, 135, 135, 0);
+    border: 1px solid black; /* Add black border */
+    border-radius: 3px; /* Add rounded corners */
+    z-index: 1; /* Ensure it is in front of the background but behind the text */
 }
 
-.popup-content {
-    background-color: white;
-    width: 80%;
-    max-width: 400px;
-    margin: 20px auto;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    max-height: 90vh; /* Ensure the popup content fits within the viewport height */
-    overflow-y: auto; /* Enable scrolling if content overflows */
+#progressBar1 {
+    position: absolute;
+    height: 100%;
+    background-color: rgba(7, 7, 7, 0.384);
+    border-radius: 2px; /* Add rounded corners */
 }
 
-/* Style for the close button */
-#closeSettings {
-    background-color: #ccc;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    float: right;
+#soundAlertLine1 {
+    position: absolute;
+    height: 100%;
+    width: 2px;
+    background-color: black;
 }
 
-/* Add more styles as needed for your settings window */
+#progressContainer2 {
+    position: fixed;
+    top: 30px; /* 30px from the top */
+    left: 1.8%; /* Adjust right position as needed */
+    width: 23%; /* Adjust width as needed */
+    height: 10px; /* Adjust height as needed */
+    background-color: rgba(138, 138, 138, 0);
+    border: 1px solid black; /* Add black border */
+    border-radius: 3px; /* Add rounded corners */
+    z-index: 1; /* Ensure it is in front of the background but behind the text */
+}
+
+#progressBar2 {
+    position: absolute;
+    height: 100%;
+    background-color: rgba(7, 7, 7, 0.384);
+    border-radius: 2px; /* Add rounded corners */
+}
+
+#soundAlertLine2 {
+    position: absolute;
+    height: 100%;
+    width: 2px;
+    background-color: black;
+}
     </style>
 </head>
 <body>
 <div class="content">
     
     <h1 id="conveyorCalculator" style="font-size: 2.2rem; display: none;">Conveyor Calculator</h1>
+    <div id="progressContainer1">
+        <div id="progressBar1"></div>
+        <div id="soundAlertLine1"></div>
+    </div>
+    <div id="progressContainer2">
+        <div id="progressBar2"></div>
+        <div id="soundAlertLine2"></div>
+    </div>
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <button id="startConveyor2" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px;margin-right: 20px;">START CONVEYOR 2</button>
         <button id="startConveyor1" style="display: none; border: 1px solid black; border-radius: 5px; width: 200px;margin-top: 10px; margin-left: 20px;">START CONVEYOR 1</button>
@@ -931,13 +979,22 @@ database.ref('settings/sound/con2').on('value', (snapshot) => {
     }
 });
 
-// Function to update the countdown timer
-function updateCountdownTimer() {
-    if (timerValue === undefined) {
-        console.log('Timer value is not set.');
-        return; // Exit if timerValue is not set
-    }
+let alertTime1 = 600; // Default value
+    let alertTime2 = 600; // Default value
 
+    // Listen for changes in the timer value in real-time
+    database.ref('settings/timer').on('value', (snapshot) => {
+        const timerValue = snapshot.val();
+        if (timerValue !== null) {
+            alertTime1 = timerValue;
+            alertTime2 = timerValue;
+            console.log('Alert times updated:', alertTime1, alertTime2);
+        } else {
+            console.error('Timer value not found in Firebase.');
+        }
+    });
+
+function updateCountdownTimer() {
     const now = new Date();
     const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
     const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
@@ -946,47 +1003,55 @@ function updateCountdownTimer() {
     console.log('estNextTime2:', estNextTime2);
 
     if (estNextTime1) {
-        const timeDifference1 = (estNextTime1 - now) / 1000; // in seconds
-        console.log(`Conveyor 1: Time difference is ${timeDifference1} seconds`);
-        if (timeDifference1 <= timerValue && timeDifference1 > 0 && !hasFlashed1) {
-            if (skipNext1) {
-                console.log('Skipping sound for Conveyor 1');
-                skipNext1 = false; // Reset skipNext1 after skipping
-            } else {
-                console.log('Triggering sound for Conveyor 1');
-                triggerSound('con1'); // Pass the correct conveyor identifier
-                hasFlashed1 = true; // Mark that the sound has been played for Conveyor 1
-            }
-        } else if (timeDifference1 > timerValue) {
-            hasFlashed1 = false; // Reset the flag if more than timer value
-        }
+        const lastLapTime1 = parseDate(getNewestLapTime(lapTimes1));
+        const totalDuration1 = (estNextTime1 - lastLapTime1) / 1000; // in seconds
+        const remainingTime1 = (estNextTime1 - now) / 1000; // in seconds
+        console.log(`Conveyor 1: Total duration is ${totalDuration1} seconds`);
+        console.log(`Conveyor 1: Remaining time is ${remainingTime1} seconds`);
+
+        // Calculate progress based on elapsed time relative to total duration
+        const elapsedTime1 = totalDuration1 - remainingTime1;
+        const progress1 = Math.max(0, Math.min(100, (elapsedTime1 / totalDuration1) * 100));
+        const progressBar1 = document.getElementById('progressBar1');
+        progressBar1.style.width = `${progress1}%`;
+        console.log(`Conveyor 1 progress: ${progress1}%`); // Debugging line
+
         const countdownDisplay1 = document.getElementById('countdownDisplay1');
         if (countdownDisplay1) {
-            countdownDisplay1.textContent = formatTime(timeDifference1);
+            countdownDisplay1.textContent = formatTime(remainingTime1);
         }
+
+        // Calculate the position of the black line based on the alert time
+        const alertPosition1 = Math.max(0, Math.min(100, ((totalDuration1 - alertTime1) / totalDuration1) * 100));
+        const soundAlertLine1 = document.getElementById('soundAlertLine1');
+        soundAlertLine1.style.left = `${alertPosition1}%`;
     } else {
         console.log('Estimated next time for Conveyor 1 is not available.');
     }
 
     if (estNextTime2) {
-        const timeDifference2 = (estNextTime2 - now) / 1000; // in seconds
-        console.log(`Conveyor 2: Time difference is ${timeDifference2} seconds`);
-        if (timeDifference2 <= timerValue && timeDifference2 > 0 && !hasFlashed2) {
-            if (skipNext2) {
-                console.log('Skipping sound for Conveyor 2');
-                skipNext2 = false; // Reset skipNext2 after skipping
-            } else {
-                console.log('Triggering sound for Conveyor 2');
-                triggerSound('con2'); // Pass the correct conveyor identifier
-                hasFlashed2 = true; // Mark that the sound has been played for Conveyor 2
-            }
-        } else if (timeDifference2 > timerValue) {
-            hasFlashed2 = false; // Reset the flag if more than timer value
-        }
+        const lastLapTime2 = parseDate(getNewestLapTime(lapTimes2));
+        const totalDuration2 = (estNextTime2 - lastLapTime2) / 1000; // in seconds
+        const remainingTime2 = (estNextTime2 - now) / 1000; // in seconds
+        console.log(`Conveyor 2: Total duration is ${totalDuration2} seconds`);
+        console.log(`Conveyor 2: Remaining time is ${remainingTime2} seconds`);
+
+        // Calculate progress based on elapsed time relative to total duration
+        const elapsedTime2 = totalDuration2 - remainingTime2;
+        const progress2 = Math.max(0, Math.min(100, (elapsedTime2 / totalDuration2) * 100));
+        const progressBar2 = document.getElementById('progressBar2');
+        progressBar2.style.width = `${progress2}%`;
+        console.log(`Conveyor 2 progress: ${progress2}%`); // Debugging line
+
         const countdownDisplay2 = document.getElementById('countdownDisplay2');
         if (countdownDisplay2) {
-            countdownDisplay2.textContent = formatTime(timeDifference2);
+            countdownDisplay2.textContent = formatTime(remainingTime2);
         }
+
+        // Calculate the position of the black line based on the alert time
+        const alertPosition2 = Math.max(0, Math.min(100, ((totalDuration2 - alertTime2) / totalDuration2) * 100));
+        const soundAlertLine2 = document.getElementById('soundAlertLine2');
+        soundAlertLine2.style.left = `${alertPosition2}%`;
     } else {
         console.log('Estimated next time for Conveyor 2 is not available.');
     }
