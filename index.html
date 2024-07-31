@@ -180,8 +180,8 @@
         #progressContainer1 {
     position: fixed;
     top: 93px; /* 30px from the top */
-    right: 3%; /* Adjust left position as needed */
-    width: 29%; /* Adjust width as needed */
+    right: 5%; /* Adjust left position as needed */
+    width: 31%; /* Adjust width as needed */
     height: 10px; /* Adjust height as needed */
     background-color: rgba(136, 135, 135, 0);
     border: 1px solid black; /* Add black border */
@@ -206,8 +206,8 @@
 #progressContainer2 {
     position: fixed;
     top: 93px; /* 30px from the top */
-    left: 3%; /* Adjust right position as needed */
-    width: 29%; /* Adjust width as needed */
+    left: 3.2%; /* Adjust right position as needed */
+    width: 31%; /* Adjust width as needed */
     height: 10px; /* Adjust height as needed */
     background-color: rgba(138, 138, 138, 0);
     border: 1px solid black; /* Add black border */
@@ -994,7 +994,27 @@ let alertTime1 = 600; // Default value
         }
     });
 
+let alertTime1 = 600; // Default value
+let alertTime2 = 600; // Default value
+
+// Listen for changes in the timer value in real-time
+database.ref('settings/timer').on('value', (snapshot) => {
+    const timerValue = snapshot.val();
+    if (timerValue !== null) {
+        alertTime1 = timerValue;
+        alertTime2 = timerValue;
+        console.log('Alert times updated:', alertTime1, alertTime2);
+    } else {
+        console.error('Timer value not found in Firebase.');
+    }
+});
+
 function updateCountdownTimer() {
+    if (timerValue === undefined) {
+        console.log('Timer value is not set.');
+        return; // Exit if timerValue is not set
+    }
+
     const now = new Date();
     const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
     const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
@@ -1025,6 +1045,20 @@ function updateCountdownTimer() {
         const alertPosition1 = Math.max(0, Math.min(100, ((totalDuration1 - alertTime1) / totalDuration1) * 100));
         const soundAlertLine1 = document.getElementById('soundAlertLine1');
         soundAlertLine1.style.left = `${alertPosition1}%`;
+
+        // Trigger sound logic
+        if (remainingTime1 <= timerValue && remainingTime1 > 0 && !hasFlashed1) {
+            if (skipNext1) {
+                console.log('Skipping sound for Conveyor 1');
+                skipNext1 = false; // Reset skipNext1 after skipping
+            } else {
+                console.log('Triggering sound for Conveyor 1');
+                triggerSound('con1'); // Pass the correct conveyor identifier
+                hasFlashed1 = true; // Mark that the sound has been played for Conveyor 1
+            }
+        } else if (remainingTime1 > timerValue) {
+            hasFlashed1 = false; // Reset the flag if more than timer value
+        }
     } else {
         console.log('Estimated next time for Conveyor 1 is not available.');
     }
@@ -1052,6 +1086,20 @@ function updateCountdownTimer() {
         const alertPosition2 = Math.max(0, Math.min(100, ((totalDuration2 - alertTime2) / totalDuration2) * 100));
         const soundAlertLine2 = document.getElementById('soundAlertLine2');
         soundAlertLine2.style.left = `${alertPosition2}%`;
+
+        // Trigger sound logic
+        if (remainingTime2 <= timerValue && remainingTime2 > 0 && !hasFlashed2) {
+            if (skipNext2) {
+                console.log('Skipping sound for Conveyor 2');
+                skipNext2 = false; // Reset skipNext2 after skipping
+            } else {
+                console.log('Triggering sound for Conveyor 2');
+                triggerSound('con2'); // Pass the correct conveyor identifier
+                hasFlashed2 = true; // Mark that the sound has been played for Conveyor 2
+            }
+        } else if (remainingTime2 > timerValue) {
+            hasFlashed2 = false; // Reset the flag if more than timer value
+        }
     } else {
         console.log('Estimated next time for Conveyor 2 is not available.');
     }
