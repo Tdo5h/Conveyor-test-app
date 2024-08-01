@@ -228,21 +228,6 @@
     width: 2px;
     background-color: black;
 }
-#conveyor1BarGraph {
-        position: fixed;
-        bottom: 0%;
-        right: 12%;
-        z-index: 1;
-        height: 5vh;
-    }
-
-    #conveyor2BarGraph {
-        position: fixed;
-        bottom: 1%;
-        left: 0%;
-        z-index: 1;
-        height: 5vh;
-    }
     </style>
 </head>
 <body>
@@ -368,10 +353,7 @@
     <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="blackoutScreen"></div>
-    <canvas id="conveyor2BarGraph" width="100"length="10" height="150"></canvas>
-    <canvas id="conveyor1BarGraph" width="100" height="150"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<img src="qr-code.png" alt="QR Code" class="qr-code">
+    <img src="qr-code.png" alt="QR Code" class="qr-code">
     
     <div id="topClock"style="padding: 15px;></div>
 </div>
@@ -476,137 +458,6 @@ window.addEventListener('online', () => {
 window.addEventListener('offline', () => {
     isOnline = false;
     console.log('Device is offline.');
-});
-// Function to fetch lap data from Firebase and count laps per day
-function fetchLapData(conveyor, callback) {
-    const lapsRef = database.ref(`laps/${conveyor}`);
-    const lapCounts = Array(16).fill(0); // Initialize array to hold lap counts for 16 intervals
-
-    lapsRef.once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            const now = new Date();
-            const oneDay = 24 * 60 * 60 * 1000; // One day in milliseconds
-            const halfDay = 12 * 60 * 60 * 1000; // Half day in milliseconds
-
-            for (const key in data) {
-                if (data.hasOwnProperty(key)) {
-                    try {
-                        const lapData = JSON.parse(data[key].data); // Parse the JSON string
-                        if (lapData.timeOfDay) { // Check if timeOfDay is defined
-                            const lapDate = parseDate(lapData.timeOfDay);
-                            const dayDiff = Math.floor((now - lapDate) / oneDay);
-                            const halfDayDiff = Math.floor((now - lapDate) / halfDay);
-
-                            if (dayDiff >= 0 && dayDiff < 8) {
-                                lapCounts[15 - halfDayDiff]++; // Count laps, most recent interval at the end
-                            }
-                        }
-                    } catch (e) {
-                        console.error(`Error parsing JSON for lap:`, data[key].data, e); // Log the error and the invalid JSON
-                    }
-                }
-            }
-        }
-        callback(lapCounts);
-    }).catch((error) => {
-        console.error('Error fetching lap data from Firebase:', error);
-    });
-}
-
-// Function to parse a date string in the format MM/DD HH:mm AM/PM
-function parseDate(dateString) {
-    const [datePart, timePart, ampm] = dateString.split(' ');
-    const [month, day] = datePart.split('/').map(Number);
-    const [hours, minutes] = timePart.split(':').map(Number);
-    const now = new Date();
-    const year = now.getFullYear();
-    let hours24 = hours;
-    if (ampm.toLowerCase() === 'pm' && hours !== 12) {
-        hours24 += 12;
-    } else if (ampm.toLowerCase() === 'am' && hours === 12) {
-        hours24 = 0;
-    }
-    return new Date(year, month - 1, day, hours24, minutes);
-}
-
-const colorSequence = [
-    'Green', 'Black', 'Green', 'Black', 'Blue', 'Green', 'Blue', 'Green',
-    'Red', 'Blue', 'Red', 'Blue', 'Black', 'Red', 'Black', 'Red'
-];
-
-// Function to fetch lap data and create bar graphs
-function fetchAndCreateGraph(conveyor, elementId, label, maxYValue) {
-    fetchLapData(conveyor, (data) => {
-        const canvas = document.getElementById(elementId);
-        const ctx = canvas.getContext('2d');
-        
-        // Clear the canvas before drawing the new graph
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Destroy existing chart instance if it exists
-        if (canvas.chartInstance) {
-            canvas.chartInstance.destroy();
-        }
-        
-        // Create a new chart instance
-        canvas.chartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: colorSequence, // Use the color sequence for labels
-                datasets: [{
-                    label: label,
-                    data: data,
-                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
-                    borderColor: 'black',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: {
-                        display: false // Hide the legend
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: maxYValue, // Set the maximum value for the y-axis
-                        ticks: {
-                            stepSize: 2, // Increment by 2
-                            color: 'black' // Change the color to black
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 8.4 // 40% smaller than the default size (usually 14)
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Ensure graph is visible
-        canvas.style.display = 'block';
-    });
-}
-
-// Function to get the maximum value from both datasets
-function getMaxYValue(data1, data2) {
-    const maxData1 = Math.max(...data1);
-    const maxData2 = Math.max(...data2);
-    return Math.max(maxData1, maxData2);
-}
-
-// Fetch data and create bar graphs for Conveyor 1 and Conveyor 2
-fetchLapData('conveyor1', (conveyor1Data) => {
-    fetchLapData('conveyor2', (conveyor2Data) => {
-        const maxYValue = getMaxYValue(conveyor1Data, conveyor2Data);
-        fetchAndCreateGraph('conveyor1', 'conveyor1BarGraph', 'Conveyor 1 Laps', maxYValue);
-        fetchAndCreateGraph('conveyor2', 'conveyor2BarGraph', 'Conveyor 2 Laps', maxYValue);
-    });
 });
 
 // Call sendDataToFirebase when you want to send data
@@ -1343,7 +1194,6 @@ function calculateAverageTime(lapTimes) {
 document.addEventListener('DOMContentLoaded', () => {
     fetchSettingsFromFirebase();
     listenForSettingsChanges(); // Start listening for real-time changes
-    checkAndRenderGraphs();
 
     // Add event listener for the enable lap buttons
     const enableLapButtons = document.getElementById('enableLapButtons');
