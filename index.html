@@ -228,17 +228,10 @@
     width: 2px;
     background-color: black;
 }
-
-
-
-
-
- 
-   
 #conveyor1BarGraph {
         position: fixed;
         bottom: 0%;
-        right: 7.4%;
+        right: 12%;
         z-index: 1;
         height: 5vh;
     }
@@ -250,12 +243,6 @@
         z-index: 1;
         height: 5vh;
     }
-
-
-
-
-
-
     </style>
 </head>
 <body>
@@ -490,12 +477,12 @@ window.addEventListener('offline', () => {
     isOnline = false;
     console.log('Device is offline.');
 });
- // Function to fetch lap data from Firebase and count laps per day
+// Function to fetch lap data from Firebase and count laps per day
 function fetchLapData(conveyor, callback) {
     const lapsRef = database.ref(`laps/${conveyor}`);
     const lapCounts = Array(16).fill(0); // Initialize array to hold lap counts for 16 intervals
 
-    lapsRef.on('value', (snapshot) => { // Use 'on' for real-time updates
+    lapsRef.once('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             const now = new Date();
@@ -522,7 +509,7 @@ function fetchLapData(conveyor, callback) {
             }
         }
         callback(lapCounts);
-    }, (error) => {
+    }).catch((error) => {
         console.error('Error fetching lap data from Firebase:', error);
     });
 }
@@ -559,8 +546,8 @@ function createBarGraph(ctx, label, data) {
             datasets: [{
                 label: label,
                 data: data,
-                backgroundColor: 'rgba(138, 138, 138, 0.5)',
-                borderColor: 'rgba(138, 138, 138, 1)',
+                backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                borderColor: 'black',
                 borderWidth: 1
             }]
         },
@@ -573,7 +560,17 @@ function createBarGraph(ctx, label, data) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: adjustedMax // Set the maximum value for the y-axis dynamically
+                    ticks: {
+                        stepSize: 2, // Increment by 2
+                        color: 'black' // Change the color to black
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 8.4 // 40% smaller than the default size (usually 14)
+                        }
+                    }
                 }
             }
         }
@@ -584,11 +581,6 @@ function createBarGraph(ctx, label, data) {
 fetchLapData('conveyor1', (conveyor1Data) => {
     const ctx1 = document.getElementById('conveyor1BarGraph').getContext('2d');
     createBarGraph(ctx1, 'Conveyor 1 Laps', conveyor1Data);
-});
-
-fetchLapData('conveyor2', (conveyor2Data) => {
-    const ctx2 = document.getElementById('conveyor2BarGraph').getContext('2d');
-    createBarGraph(ctx2, 'Conveyor 2 Laps', conveyor2Data);
 });
 
 fetchLapData('conveyor2', (conveyor2Data) => {
