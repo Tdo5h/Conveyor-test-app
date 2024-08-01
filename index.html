@@ -228,6 +228,34 @@
     width: 2px;
     background-color: black;
 }
+
+
+
+
+
+ 
+   
+#conveyor1BarGraph {
+        position: fixed;
+        bottom: 0%;
+        right: 7.4%;
+        z-index: 1;
+        height: 5vh;
+    }
+
+    #conveyor2BarGraph {
+        position: fixed;
+        bottom: 1%;
+        left: 0%;
+        z-index: 1;
+        height: 5vh;
+    }
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -353,7 +381,10 @@
     <div id="conveyor2Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="conveyor1Stats" style="width: 50%; height: 100%; font-size: 1.5em;"></div>
     <div id="blackoutScreen"></div>
-    <img src="qr-code.png" alt="QR Code" class="qr-code">
+    <canvas id="conveyor2BarGraph" width="100"length="10" height="150"></canvas>
+    <canvas id="conveyor1BarGraph" width="100" height="150"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<img src="qr-code.png" alt="QR Code" class="qr-code">
     
     <div id="topClock"style="padding: 15px;></div>
 </div>
@@ -458,6 +489,111 @@ window.addEventListener('online', () => {
 window.addEventListener('offline', () => {
     isOnline = false;
     console.log('Device is offline.');
+});
+ // Function to fetch lap data from Firebase and count laps per day
+function fetchLapData(conveyor, callback) {
+    const lapsRef = database.ref(`laps/${conveyor}`);
+    const lapCounts = Array(16).fill(0); // Initialize array to hold lap counts for 16 intervals
+
+    lapsRef.on('value', (snapshot) => { // Use 'on' for real-time updates
+        const data = snapshot.val();
+        if (data) {
+            const now = new Date();
+            const oneDay = 24 * 60 * 60 * 1000; // One day in milliseconds
+            const halfDay = 12 * 60 * 60 * 1000; // Half day in milliseconds
+
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    try {
+                        const lapData = JSON.parse(data[key].data); // Parse the JSON string
+                        if (lapData.timeOfDay) { // Check if timeOfDay is defined
+                            const lapDate = parseDate(lapData.timeOfDay);
+                            const dayDiff = Math.floor((now - lapDate) / oneDay);
+                            const halfDayDiff = Math.floor((now - lapDate) / halfDay);
+
+                            if (dayDiff >= 0 && dayDiff < 8) {
+                                lapCounts[15 - halfDayDiff]++; // Count laps, most recent interval at the end
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Error parsing JSON for lap:`, data[key].data, e); // Log the error and the invalid JSON
+                    }
+                }
+            }
+        }
+        callback(lapCounts);
+    }, (error) => {
+        console.error('Error fetching lap data from Firebase:', error);
+    });
+}
+
+// Function to parse a date string in the format MM/DD HH:mm AM/PM
+function parseDate(dateString) {
+    const [datePart, timePart, ampm] = dateString.split(' ');
+    const [month, day] = datePart.split('/').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    const now = new Date();
+    const year = now.getFullYear();
+    let hours24 = hours;
+    if (ampm.toLowerCase() === 'pm' && hours !== 12) {
+        hours24 += 12;
+    } else if (ampm.toLowerCase() === 'am' && hours === 12) {
+        hours24 = 0;
+    }
+    return new Date(year, month - 1, day, hours24, minutes);
+}
+
+const colorSequence = [
+    'Green', 'Black', 'Green', 'Black', 'Blue', 'Green', 'Blue', 'Green',
+    'Red', 'Blue', 'Red', 'Blue', 'Black', 'Red', 'Black', 'Red'
+];
+
+function createBarGraph(ctx, label, data) {
+    const maxDataValue = Math.max(...data);
+    const adjustedMax = maxDataValue * 4; // Adjust the max value to be 4 times the highest data value
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: colorSequence, // Use the color sequence for labels
+            datasets: [{
+                label: label,
+                data: data,
+                backgroundColor: 'rgba(138, 138, 138, 0.5)',
+                borderColor: 'rgba(138, 138, 138, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false // Hide the legend
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: adjustedMax // Set the maximum value for the y-axis dynamically
+                }
+            }
+        }
+    });
+}
+
+// Fetch data and create bar graphs for Conveyor 1 and Conveyor 2
+fetchLapData('conveyor1', (conveyor1Data) => {
+    const ctx1 = document.getElementById('conveyor1BarGraph').getContext('2d');
+    createBarGraph(ctx1, 'Conveyor 1 Laps', conveyor1Data);
+});
+
+fetchLapData('conveyor2', (conveyor2Data) => {
+    const ctx2 = document.getElementById('conveyor2BarGraph').getContext('2d');
+    createBarGraph(ctx2, 'Conveyor 2 Laps', conveyor2Data);
+});
+
+fetchLapData('conveyor2', (conveyor2Data) => {
+    const ctx2 = document.getElementById('conveyor2BarGraph').getContext('2d');
+    createBarGraph(ctx2, 'Conveyor 2 Laps', conveyor2Data);
 });
 
 // Call sendDataToFirebase when you want to send data
