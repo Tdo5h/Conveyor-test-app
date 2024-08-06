@@ -916,41 +916,41 @@ function playSound(soundFile) {
 
 // Function to trigger the sound
 function triggerSound(conveyor) {
-        console.log(`Attempting to trigger sound for ${conveyor}`);
-        if (!conveyor) {
-            console.error('Conveyor parameter is undefined.');
-            return;
-        }
-        database.ref(`settings/sound/${conveyor}`).once('value').then(snapshot => {
-            const soundSetting = snapshot.val();
-            if (soundSetting === 1) {
-                console.log(`Sound setting for ${conveyor} is enabled. Playing sound.`);
-                const soundFile = conveyor === 'con2' ? 'sound4.mp3' : 'sound1.mp3';
-                playSound(soundFile);
-            } else if (soundSetting === 2) {
-                // Check the flag in Firebase
-                database.ref(`settings/sound/${conveyor}Flag`).once('value').then(flagSnapshot => {
-                    const playSoundFlag = flagSnapshot.val();
-                    if (playSoundFlag === 'next') {
-                        console.log(`Sound setting for ${conveyor} is set to every 2nd estimated next. Playing sound.`);
-                        const soundFile = conveyor === 'con2' ? 'sound4.mp3' : 'sound1.mp3';
-                        playSound(soundFile);
-                        // Update the flag to 'current'
-                        database.ref(`settings/sound/${conveyor}Flag`).set('current');
-                    } else {
-                        // Update the flag to 'next'
-                        database.ref(`settings/sound/${conveyor}Flag`).set('next');
-                    }
-                }).catch(error => {
-                    console.error(`Error fetching playSoundFlag for ${conveyor} from Firebase:`, error);
-                });
-            } else {
-                console.log(`Sound setting for ${conveyor} is not enabled.`);
-            }
-        }).catch(error => {
-            console.error(`Error fetching sound setting for ${conveyor}:`, error);
-        });
+    console.log(`Attempting to trigger sound for ${conveyor}`);
+    if (!conveyor) {
+        console.error('Conveyor parameter is undefined.');
+        return;
     }
+    database.ref(`settings/sound/${conveyor}`).once('value').then(snapshot => {
+        const soundSetting = snapshot.val();
+        if (soundSetting === 1) {
+            console.log(`Sound setting for ${conveyor} is enabled. Playing sound.`);
+            const soundFile = conveyor === 'con2' ? 'sound4.mp3' : 'sound1.mp3';
+            playSound(soundFile);
+        } else if (soundSetting === 2) {
+            // Check the flag in Firebase
+            database.ref(`settings/sound/${conveyor}Flag`).once('value').then(flagSnapshot => {
+                const playSoundFlag = flagSnapshot.val();
+                if (playSoundFlag === 'next') {
+                    console.log(`Sound setting for ${conveyor} is set to every 2nd estimated next. Playing sound.`);
+                    const soundFile = conveyor === 'con2' ? 'sound4.mp3' : 'sound1.mp3';
+                    playSound(soundFile);
+                    // Update the flag to 'current'
+                    database.ref(`settings/sound/${conveyor}Flag`).set('current');
+                } else {
+                    // Update the flag to 'next'
+                    database.ref(`settings/sound/${conveyor}Flag`).set('next');
+                }
+            }).catch(error => {
+                console.error(`Error fetching playSoundFlag for ${conveyor} from Firebase:`, error);
+            });
+        } else {
+            console.log(`Sound setting for ${conveyor} is not enabled.`);
+        }
+    }).catch(error => {
+        console.error(`Error fetching sound setting for ${conveyor}:`, error);
+    });
+}
 
 // Listen for changes in the sound setting for Conveyor 1
 let soundPlayedCon1 = false; // Track if the sound has been played for Conveyor 1
@@ -1005,23 +1005,40 @@ database.ref('settings/timer').on('value', (snapshot) => {
     }
 });
 
-function updateCountdownTimer() {
+
+let previousEstNextTime1 = null;
+    let previousEstNextTime2 = null;
+    let initialDelayPassed = false;
+    let resetCount1 = 0;
+    let resetCount2 = 0;
+    let avgLaps1 = 2;
+    let avgLaps2 = 2;
+
+    // Set a timeout to allow flag changes after 5 seconds
+    setTimeout(() => {
+        initialDelayPassed = true;
+    }, 5000);
+
+    function updateCountdownTimer() {
         if (timerValue === undefined) {
             console.log('Timer value is not set.');
             return; // Exit if timerValue is not set
         }
 
         const now = new Date();
-        const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1);
-        const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2);
+        const estNextTime1 = getEstimatedNextTimeWeighted(lapTimes1, avgLaps1);
+        const estNextTime2 = getEstimatedNextTimeWeighted(lapTimes2, avgLaps2);
 
         console.log('estNextTime1:', estNextTime1);
         console.log('estNextTime2:', estNextTime2);
 
+        let remainingTime1 = 0;
+        let remainingTime2 = 0;
+
         if (estNextTime1) {
             const lastLapTime1 = parseDate(getNewestLapTime(lapTimes1));
             const totalDuration1 = (estNextTime1 - lastLapTime1) / 1000; // in seconds
-            const remainingTime1 = (estNextTime1 - now) / 1000; // in seconds
+            remainingTime1 = (estNextTime1 - now) / 1000; // in seconds
             console.log(`Conveyor 1: Total duration is ${totalDuration1} seconds`);
             console.log(`Conveyor 1: Remaining time is ${remainingTime1} seconds`);
 
@@ -1046,7 +1063,7 @@ function updateCountdownTimer() {
                 const flagValue = flagSnapshot.val();
                 database.ref('settings/sound/con1').once('value').then(soundSnapshot => {
                     const soundValue = soundSnapshot.val();
-                    if (flagValue === 'current' && soundValue === 2) {
+                    if (soundValue === 2 && flagValue === 'current') {
                         soundAlertLine1.style.display = 'none';
                     } else {
                         soundAlertLine1.style.left = `${alertPosition1}%`;
@@ -1057,14 +1074,17 @@ function updateCountdownTimer() {
 
             // Trigger sound logic
             if (remainingTime1 <= timerValue && remainingTime1 > 0 && !hasFlashed1) {
-                if (skipNext1) {
-                    console.log('Skipping sound for Conveyor 1');
-                    skipNext1 = false; // Reset skipNext1 after skipping
-                } else {
-                    console.log('Triggering sound for Conveyor 1');
-                    triggerSound('con1'); // Pass the correct conveyor identifier
-                    hasFlashed1 = true; // Mark that the sound has been played for Conveyor 1
-                }
+                database.ref('settings/sound/con1').once('value').then(soundSnapshot => {
+                    const soundValue = soundSnapshot.val();
+                    database.ref('settings/sound/con1Flag').once('value').then(flagSnapshot => {
+                        const flagValue = flagSnapshot.val();
+                        if (soundValue === 1 || (soundValue === 2 && flagValue === 'next')) {
+                            console.log('Triggering sound for Conveyor 1');
+                            triggerSound('con1'); // Pass the correct conveyor identifier
+                            hasFlashed1 = true; // Mark that the sound has been played for Conveyor 1
+                        }
+                    });
+                });
             } else if (remainingTime1 > timerValue) {
                 hasFlashed1 = false; // Reset the flag if more than timer value
             }
@@ -1075,7 +1095,7 @@ function updateCountdownTimer() {
         if (estNextTime2) {
             const lastLapTime2 = parseDate(getNewestLapTime(lapTimes2));
             const totalDuration2 = (estNextTime2 - lastLapTime2) / 1000; // in seconds
-            const remainingTime2 = (estNextTime2 - now) / 1000; // in seconds
+            remainingTime2 = (estNextTime2 - now) / 1000; // in seconds
             console.log(`Conveyor 2: Total duration is ${totalDuration2} seconds`);
             console.log(`Conveyor 2: Remaining time is ${remainingTime2} seconds`);
 
@@ -1100,7 +1120,7 @@ function updateCountdownTimer() {
                 const flagValue = flagSnapshot.val();
                 database.ref('settings/sound/con2').once('value').then(soundSnapshot => {
                     const soundValue = soundSnapshot.val();
-                    if (flagValue === 'current' && soundValue === 2) {
+                    if (soundValue === 2 && flagValue === 'current') {
                         soundAlertLine2.style.display = 'none';
                     } else {
                         soundAlertLine2.style.left = `${alertPosition2}%`;
@@ -1111,24 +1131,136 @@ function updateCountdownTimer() {
 
             // Trigger sound logic
             if (remainingTime2 <= timerValue && remainingTime2 > 0 && !hasFlashed2) {
-                if (skipNext2) {
-                    console.log('Skipping sound for Conveyor 2');
-                    skipNext2 = false; // Reset skipNext2 after skipping
-                } else {
-                    console.log('Triggering sound for Conveyor 2');
-                    triggerSound('con2'); // Pass the correct conveyor identifier
-                    hasFlashed2 = true; // Mark that the sound has been played for Conveyor 2
-                }
+                database.ref('settings/sound/con2').once('value').then(soundSnapshot => {
+                    const soundValue = soundSnapshot.val();
+                    database.ref('settings/sound/con2Flag').once('value').then(flagSnapshot => {
+                        const flagValue = flagSnapshot.val();
+                        if (soundValue === 1 || (soundValue === 2 && flagValue === 'next')) {
+                            console.log('Triggering sound for Conveyor 2');
+                            triggerSound('con2'); // Pass the correct conveyor identifier
+                            hasFlashed2 = true; // Mark that the sound has been played for Conveyor 2
+                        }
+                    });
+                });
             } else if (remainingTime2 > timerValue) {
                 hasFlashed2 = false; // Reset the flag if more than timer value
             }
         } else {
             console.log('Estimated next time for Conveyor 2 is not available.');
         }
+
+        // Check if the timer has gained time in the positive direction
+        if (initialDelayPassed) {
+            if (previousEstNextTime1 && estNextTime1 && estNextTime1 > previousEstNextTime1) {
+                resetCount1++;
+                if (resetCount1 % 2 === 0 && avgLaps1 < 6) {
+                    avgLaps1 += 2;
+                }
+                database.ref('settings/sound/con1').once('value').then(soundSnapshot => {
+                    const soundValue = soundSnapshot.val();
+                    if (soundValue === 2) {
+                        database.ref('settings/sound/con1Flag').once('value').then(flagSnapshot => {
+                            const flagValue = flagSnapshot.val();
+                            const newFlagValue = flagValue === 'current' ? 'next' : 'current';
+                            database.ref('settings/sound/con1Flag').set(newFlagValue);
+                        });
+                    }
+                });
+            }
+
+            if (previousEstNextTime2 && estNextTime2 && estNextTime2 > previousEstNextTime2) {
+                resetCount2++;
+                if (resetCount2 % 2 === 0 && avgLaps2 < 6) {
+                    avgLaps2 += 2;
+                }
+                database.ref('settings/sound/con2').once('value').then(soundSnapshot => {
+                    const soundValue = soundSnapshot.val();
+                    if (soundValue === 2) {
+                        database.ref('settings/sound/con2Flag').once('value').then(flagSnapshot => {
+                            const flagValue = flagSnapshot.val();
+                            const newFlagValue = flagValue === 'current' ? 'next' : 'current';
+                            database.ref('settings/sound/con2Flag').set(newFlagValue);
+                        });
+                    }
+                });
+            }
+        }
+
+        // Update previous estimated next times
+        previousEstNextTime1 = estNextTime1;
+        previousEstNextTime2 = estNextTime2;
     }
 
     // Update the countdown timer every second
     setInterval(updateCountdownTimer, 1000);
+
+    // Function to handle new lap and reset logic
+    function handleNewLap(conveyor, lapTimes) {
+        const estNextTime = getEstimatedNextTimeWeighted(lapTimes, conveyor === 'con1' ? avgLaps1 : avgLaps2);
+        if (estNextTime) {
+            const flagRef = database.ref(`settings/sound/${conveyor}Flag`);
+            flagRef.once('value').then(flagSnapshot => {
+                const flagValue = flagSnapshot.val();
+                const newFlagValue = flagValue === 'current' ? 'next' : 'current';
+                flagRef.set(newFlagValue);
+            });
+        }
+    }
+
+    // Example usage: Call handleNewLap when a new lap is recorded
+    document.getElementById('recordLap1').addEventListener('click', () => {
+        if (running1) {
+            const lapTime = formatTime(Math.floor((Date.now() - lapStart1) / 1000));
+            const timeOfDay = getFormattedTime();
+            lapTimes1.push({ lapTime, timeOfDay });
+            if (lapTimes1.length > 10) {
+                lapTimes1.shift(); // Remove the oldest lap if more than 10 laps
+            }
+            lapStart1 = Date.now();
+            displayStats();
+
+            // Send lap time data to Firebase
+            sendLapDataToFirebase('conveyor1', lapTime, timeOfDay);
+
+            // Handle new lap and reset logic
+            handleNewLap('con1', lapTimes1);
+        }
+    });
+
+    document.getElementById('recordLap2').addEventListener('click', () => {
+        if (running2) {
+            const lapTime = formatTime(Math.floor((Date.now() - lapStart2) / 1000));
+            const timeOfDay = getFormattedTime();
+            lapTimes2.push({ lapTime, timeOfDay });
+            if (lapTimes2.length > 10) {
+                lapTimes2.shift(); // Remove the oldest lap if more than 10 laps
+            }
+            lapStart2 = Date.now();
+            displayStats();
+
+            // Send lap time data to Firebase
+            sendLapDataToFirebase('conveyor2', lapTime, timeOfDay);
+
+            // Handle new lap and reset logic
+            handleNewLap('con2', lapTimes2);
+        }
+    });
+
+    // Function to calculate the estimated next time for a conveyor
+    function getEstimatedNextTimeWeighted(lapTimes, avgLaps) {
+        if (lapTimes.length === 0) return null;
+
+        const averageTime = calculateAverageTimeX(lapTimes, avgLaps);
+        const newestLapTime = parseDate(getNewestLapTime(lapTimes));
+        return new Date(newestLapTime + averageTime * 1000);
+    }
+
+    // Function to calculate the average time of the last X laps
+    function calculateAverageTimeX(lapTimes, x) {
+        const lastXLaps = lapTimes.slice(-x);
+        const totalLapTime = lastXLaps.reduce((total, lapData) => total + lapData.lapTime, 0);
+        return lastXLaps.length > 0 ? totalLapTime / lastXLaps.length / 1000 : 0;
+    }
 
 
 // Function to calculate the estimated next time for a conveyor
