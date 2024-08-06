@@ -935,11 +935,7 @@ function triggerSound(conveyor) {
                     console.log(`Sound setting for ${conveyor} is set to every 2nd estimated next. Playing sound.`);
                     const soundFile = conveyor === 'con2' ? 'sound4.mp3' : 'sound1.mp3';
                     playSound(soundFile);
-                    // Update the flag to 'current'
-                    database.ref(`settings/sound/${conveyor}Flag`).set('current');
-                } else {
-                    // Update the flag to 'next'
-                    database.ref(`settings/sound/${conveyor}Flag`).set('next');
+                    // Do not update the flag here, wait for the timer reset
                 }
             }).catch(error => {
                 console.error(`Error fetching playSoundFlag for ${conveyor} from Firebase:`, error);
@@ -1151,40 +1147,42 @@ let previousEstNextTime1 = null;
 
         // Check if the timer has gained time in the positive direction
         if (initialDelayPassed) {
-            if (previousEstNextTime1 && estNextTime1 && estNextTime1 > previousEstNextTime1) {
-                resetCount1++;
-                if (resetCount1 % 2 === 0 && avgLaps1 < 6) {
-                    avgLaps1 += 2;
-                }
-                database.ref('settings/sound/con1').once('value').then(soundSnapshot => {
-                    const soundValue = soundSnapshot.val();
-                    if (soundValue === 2) {
-                        database.ref('settings/sound/con1Flag').once('value').then(flagSnapshot => {
-                            const flagValue = flagSnapshot.val();
-                            const newFlagValue = flagValue === 'current' ? 'next' : 'current';
-                            database.ref('settings/sound/con1Flag').set(newFlagValue);
-                        });
-                    }
-                });
+        if (previousEstNextTime1 && estNextTime1 && estNextTime1 > previousEstNextTime1) {
+            resetCount1++;
+            if (resetCount1 % 2 === 0 && avgLaps1 < 6) {
+                avgLaps1 += 2;
             }
-
-            if (previousEstNextTime2 && estNextTime2 && estNextTime2 > previousEstNextTime2) {
-                resetCount2++;
-                if (resetCount2 % 2 === 0 && avgLaps2 < 6) {
-                    avgLaps2 += 2;
+            // Toggle the flag only on estimated next timer reset
+            database.ref('settings/sound/con1').once('value').then(soundSnapshot => {
+                const soundValue = soundSnapshot.val();
+                if (soundValue === 2) {
+                    database.ref('settings/sound/con1Flag').once('value').then(flagSnapshot => {
+                        const flagValue = flagSnapshot.val();
+                        const newFlagValue = flagValue === 'current' ? 'next' : 'current';
+                        database.ref('settings/sound/con1Flag').set(newFlagValue);
+                    });
                 }
-                database.ref('settings/sound/con2').once('value').then(soundSnapshot => {
-                    const soundValue = soundSnapshot.val();
-                    if (soundValue === 2) {
-                        database.ref('settings/sound/con2Flag').once('value').then(flagSnapshot => {
-                            const flagValue = flagSnapshot.val();
-                            const newFlagValue = flagValue === 'current' ? 'next' : 'current';
-                            database.ref('settings/sound/con2Flag').set(newFlagValue);
-                        });
-                    }
-                });
-            }
+            });
         }
+
+        if (previousEstNextTime2 && estNextTime2 && estNextTime2 > previousEstNextTime2) {
+            resetCount2++;
+            if (resetCount2 % 2 === 0 && avgLaps2 < 6) {
+                avgLaps2 += 2;
+            }
+            // Toggle the flag only on estimated next timer reset
+            database.ref('settings/sound/con2').once('value').then(soundSnapshot => {
+                const soundValue = soundSnapshot.val();
+                if (soundValue === 2) {
+                    database.ref('settings/sound/con2Flag').once('value').then(flagSnapshot => {
+                        const flagValue = flagSnapshot.val();
+                        const newFlagValue = flagValue === 'current' ? 'next' : 'current';
+                        database.ref('settings/sound/con2Flag').set(newFlagValue);
+                    });
+                }
+            });
+        }
+    }
 
         // Update previous estimated next times
         previousEstNextTime1 = estNextTime1;
