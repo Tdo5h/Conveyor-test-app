@@ -797,6 +797,26 @@ function startCountdown() {
                 }
             }, 1000);
         }
+      // Function to show blackout screen with a message
+      function showBlackoutScreen(message) {
+        const blackoutScreen = document.getElementById('blackoutScreen');
+        blackoutScreen.style.display = 'block';
+        blackoutScreen.innerHTML = `<div style="color: white; font-size: 5em; text-align: center; margin-top: 20%;">${message}</div>`;
+        
+        setTimeout(() => {
+            blackoutScreen.style.display = 'none';
+            blackoutScreen.innerHTML = ''; // Clear the message
+        }, 5000); // Hide after 5 seconds
+    }
+
+    // Listen for changes in the trip1 and trip2 paths in Firebase
+    database.ref('trip1').on('child_added', (snapshot) => {
+        showBlackoutScreen('Check Conveyor 1 ');
+    });
+
+    database.ref('trip2').on('child_added', (snapshot) => {
+        showBlackoutScreen('Check Conveyor 2 ');
+    });
         const blackoutCheckbox = document.getElementById('blackoutCheckbox');
         const blackoutScreen = document.getElementById('blackoutScreen');
 
@@ -1201,76 +1221,89 @@ function updateCountdownTimer() {
 // Update the countdown timer every second
 setInterval(updateCountdownTimer, 1000);
 
-// Function to reset average laps if set lower than 6
-function resetAvgLapsIfNeeded() {
-    if (avgLaps1 < 6) {
-        resetCount1 = 0; // Reset resetCount1
-        saveResetCountsToFirebase(); // Save reset counts to Firebase
+ // Function to reset average laps if set lower than 6
+ function resetAvgLapsIfNeeded() {
+        if (avgLaps1 < 6) {
+            resetCount1 = 0; // Reset resetCount1
+            saveResetCountsToFirebase(); // Save reset counts to Firebase
+        }
+        if (avgLaps2 < 6) {
+            resetCount2 = 0; // Reset resetCount2
+            saveResetCountsToFirebase(); // Save reset counts to Firebase
+        }
     }
-    if (avgLaps2 < 6) {
-        resetCount2 = 0; // Reset resetCount2
-        saveResetCountsToFirebase(); // Save reset counts to Firebase
+
+    // Function to handle new lap and reset logic
+    function handleNewLap(conveyor, lapTimes) {
+        const estNextTime = getEstimatedNextTimeWeighted(lapTimes, conveyor === 'con1' ? avgLaps1 : avgLaps2);
+        if (estNextTime) {
+            const flagRef = database.ref(`settings/sound/${conveyor}Flag`);
+            flagRef.once('value').then(flagSnapshot => {
+                const flagValue = flagSnapshot.val();
+                const newFlagValue = flagValue === 'current' ? 'next' : 'current';
+                flagRef.set(newFlagValue);
+            });
+        }
     }
-}
 
-// Call resetAvgLapsIfNeeded on page load
-document.addEventListener('DOMContentLoaded', () => {
-    loadResetCountsFromFirebase();
-    resetAvgLapsIfNeeded();
-    // ... existing code ...
-});
+    // Example usage: Call handleNewLap when a new lap is recorded
+    document.getElementById('recordLap1').addEventListener('click', () => {
+        if (running1) {
+            const lapTime = formatTime(Math.floor((Date.now() - lapStart1) / 1000));
+            const timeOfDay = getFormattedTime();
+            lapTimes1.push({ lapTime, timeOfDay });
+            if (lapTimes1.length > 10) {
+                lapTimes1.shift(); // Remove the oldest lap if more than 10 laps
+            }
+            lapStart1 = Date.now();
+            displayStats();
 
-// Function to handle new lap and reset logic
-function handleNewLap(conveyor, lapTimes) {
-    const estNextTime = getEstimatedNextTimeWeighted(lapTimes, conveyor === 'con1' ? avgLaps1 : avgLaps2);
-    if (estNextTime) {
-        const flagRef = database.ref(`settings/sound/${conveyor}Flag`);
-        flagRef.once('value').then(flagSnapshot => {
-            const flagValue = flagSnapshot.val();
-            const newFlagValue = flagValue === 'current' ? 'next' : 'current';
-            flagRef.set(newFlagValue);
+            // Send lap time data to Firebase
+            sendLapDataToFirebase('conveyor1', lapTime, timeOfDay);
+
+            // Handle new lap and reset logic
+            handleNewLap('con1', lapTimes1);
+        }
+    });
+
+    document.getElementById('recordLap2').addEventListener('click', () => {
+        if (running2) {
+            const lapTime = formatTime(Math.floor((Date.now() - lapStart2) / 1000));
+            const timeOfDay = getFormattedTime();
+            lapTimes2.push({ lapTime, timeOfDay });
+            if (lapTimes2.length > 10) {
+                lapTimes2.shift(); // Remove the oldest lap if more than 10 laps
+            }
+            lapStart2 = Date.now();
+            displayStats();
+
+            // Send lap time data to Firebase
+            sendLapDataToFirebase('conveyor2', lapTime, timeOfDay);
+
+            // Handle new lap and reset logic
+            handleNewLap('con2', lapTimes2);
+        }
+    });
+
+    // Function to save reset counts to Firebase
+    function saveResetCountsToFirebase() {
+        database.ref('settings/resetCounts').set({ resetCount1, resetCount2 });
+    }
+
+    // Function to load reset counts from Firebase
+    function loadResetCountsFromFirebase() {
+        database.ref('settings/resetCounts').once('value').then(snapshot => {
+            const resetCounts = snapshot.val();
+            if (resetCounts) {
+                resetCount1 = resetCounts.resetCount1 || 0;
+                resetCount2 = resetCounts.resetCount2 || 0;
+                console.log('Reset counts loaded from Firebase:', { resetCount1, resetCount2 });
+            }
+        }).catch(error => {
+            console.error('Error loading reset counts from Firebase:', error);
         });
     }
-}
 
-// Example usage: Call handleNewLap when a new lap is recorded
-document.getElementById('recordLap1').addEventListener('click', () => {
-    if (running1) {
-        const lapTime = formatTime(Math.floor((Date.now() - lapStart1) / 1000));
-        const timeOfDay = getFormattedTime();
-        lapTimes1.push({ lapTime, timeOfDay });
-        if (lapTimes1.length > 10) {
-            lapTimes1.shift(); // Remove the oldest lap if more than 10 laps
-        }
-        lapStart1 = Date.now();
-        displayStats();
-
-        // Send lap time data to Firebase
-        sendLapDataToFirebase('conveyor1', lapTime, timeOfDay);
-
-        // Handle new lap and reset logic
-        handleNewLap('con1', lapTimes1);
-    }
-});
-
-document.getElementById('recordLap2').addEventListener('click', () => {
-    if (running2) {
-        const lapTime = formatTime(Math.floor((Date.now() - lapStart2) / 1000));
-        const timeOfDay = getFormattedTime();
-        lapTimes2.push({ lapTime, timeOfDay });
-        if (lapTimes2.length > 10) {
-            lapTimes2.shift(); // Remove the oldest lap if more than 10 laps
-        }
-        lapStart2 = Date.now();
-        displayStats();
-
-        // Send lap time data to Firebase
-        sendLapDataToFirebase('conveyor2', lapTime, timeOfDay);
-
-        // Handle new lap and reset logic
-        handleNewLap('con2', lapTimes2);
-    }
-});
 
 // Function to calculate the estimated next time for a conveyor
 function getEstimatedNextTimeWeighted(lapTimes, avgLaps) {
@@ -1351,7 +1384,8 @@ function calculateAverageTime(lapTimes) {
 document.addEventListener('DOMContentLoaded', () => {
     fetchSettingsFromFirebase();
     listenForSettingsChanges(); // Start listening for real-time changes
-    loadResetCountsFromFirebase();
+    
+
     
     // Add event listener for the enable lap buttons
     const enableLapButtons = document.getElementById('enableLapButtons');
