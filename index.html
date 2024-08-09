@@ -1891,6 +1891,7 @@ function setupLapListeners(conveyor, lapTimesArray) {
 
 // Set to store unique lap identifiers
 const uniqueLapIdentifiers = new Set();
+
 function handleNewLap(lapData, lapTimes) {
     try {
         if (lapData.lapTime && lapData.timeOfDay) {
@@ -2043,6 +2044,96 @@ function watchForNewLaps(conveyor, lapTimesArray) {
             console.error('Error loading reset counts from Firebase:', error);
         });
     }
+    function synchronizeLaps(conveyor, lapTimesArray) {
+        const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(10);
+
+        lapsRef.once('value', (snapshot) => {
+            const data = snapshot.val();
+            const newLapTimes = [];
+
+            if (data) {
+                for (const key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        const entryData = data[key];
+                        try {
+                            const parsedData = JSON.parse(entryData.data);
+                            if (parsedData.lapTime && parsedData.timeOfDay) {
+                                newLapTimes.push(parsedData);
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse entry data:', entryData, e);
+                        }
+                    }
+                }
+            }
+
+            // Update the local lapTimes array
+            lapTimesArray.length = 0;
+            lapTimesArray.push(...newLapTimes);
+
+            // Update the displayed lap list
+            displayStats();
+        }).catch((error) => {
+            console.error('Error fetching data from Firebase:', error);
+        });
+    }
+
+    function setupLapListeners(conveyor, lapTimesArray) {
+        let lastLapKey = null;
+
+        // Listen to laps/conveyor1 and laps/conveyor2 paths
+        const lapsRef = database.ref(`laps/${conveyor}`).limitToLast(1);
+
+        lapsRef.once('value', (snapshot) => {
+            const entries = Object.entries(snapshot.val() || {});
+            if (entries.length > 0) {
+                lastLapKey = entries[0][0]; // Store the key of the last lap
+            }
+
+            lapsRef.on('child_added', (childSnapshot) => {
+                if (childSnapshot.key !== lastLapKey) {
+                    lastLapKey = childSnapshot.key; // Update the key of the last lap
+
+                    const rawData = childSnapshot.val();
+                    try {
+                        const parsedData = JSON.parse(rawData.data);
+                        handleNewLap(parsedData, lapTimesArray);
+                    } catch (e) {
+                        console.error('Failed to parse raw data:', rawData, e);
+                    }
+                }
+            });
+
+            // Listen for child_removed event
+            lapsRef.on('child_removed', (childSnapshot) => {
+                const removedLapKey = childSnapshot.key;
+                const rawData = childSnapshot.val();
+                try {
+                    const parsedData = JSON.parse(rawData.data);
+                    handleRemovedLap(parsedData, lapTimesArray);
+                } catch (e) {
+                    console.error('Failed to parse raw data:', rawData, e);
+                }
+            });
+        }).catch((error) => {
+            console.error('Error setting up lap listeners in Firebase:', error);
+        });
+    }
+
+    function handleRemovedLap(lapData, lapTimes) {
+        const lapIndex = lapTimes.findIndex(lap => lap.timeOfDay === lapData.timeOfDay && lap.lapTime === lapData.lapTime);
+        if (lapIndex !== -1) {
+            lapTimes.splice(lapIndex, 1); // Remove the lap from the array
+            displayStats(); // Update the displayed lap list
+        }
+    }
+
+    // Periodically synchronize laps with Firebase
+    setInterval(() => {
+        synchronizeLaps('conveyor1', lapTimes1);
+        synchronizeLaps('conveyor2', lapTimes2);
+    }, 3000); // Adjust the interval as needed (e.g., every 5 seconds)
+
 </script>
 </body>
 </html>
