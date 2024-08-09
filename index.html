@@ -1164,8 +1164,8 @@ function updateCountdownTimer() {
         console.log('Estimated next time for Conveyor 2 is not available.');
     }
 
-    // Check if the timer has gained time in the positive direction
-    if (initialDelayPassed) {
+      // Check if the timer has gained time in the positive direction
+      if (initialDelayPassed) {
         if (previousEstNextTime1 && estNextTime1 && estNextTime1 > previousEstNextTime1) {
             resetCount1++;
             if (resetCount1 % 2 === 0 && avgLaps1 < 6) {
@@ -1176,17 +1176,7 @@ function updateCountdownTimer() {
                 database.ref('settings/conveyor1AvgLaps').set(avgLaps1);
             }
             saveResetCountsToFirebase(); // Save reset counts to Firebase
-            // Toggle the flag only on estimated next timer reset
-            database.ref('settings/sound/con1').once('value').then(soundSnapshot => {
-                const soundValue = soundSnapshot.val();
-                if (soundValue === 2) {
-                    database.ref('settings/sound/con1Flag').once('value').then(flagSnapshot => {
-                        const flagValue = flagSnapshot.val();
-                        const newFlagValue = flagValue === 'current' ? 'next' : 'current';
-                        database.ref('settings/sound/con1Flag').set(newFlagValue);
-                    });
-                }
-            });
+            // ... existing code for flag toggling ...
         }
 
         if (previousEstNextTime2 && estNextTime2 && estNextTime2 > previousEstNextTime2) {
@@ -1465,63 +1455,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-        document.getElementById('startConveyor1').addEventListener('click', () => {
-    const button = document.getElementById('startConveyor1');
-    if (!running1) {
-        lapStart1 = Date.now();
-        running1 = true;
-        button.textContent = "STOP CONVEYOR 1"; // Change button text to "Stop Conveyor 1"
-        startCountdown();
-        displayStats();
-    } else {
-        // Ask for confirmation before stopping Conveyor 1
-        const confirmStop = confirm("Are you sure you want to stop Conveyor 1?");
-        if (confirmStop) {
-            running1 = false;
-            button.textContent = "START CONVEYOR 1"; // Change button text back to "Start Conveyor 1"
-            // Calculate and update work to be done if needed
-            if (timeDifferenceRemaining > 0) {
-                workToBeDone1 = calculateWorkToBeDone(calculateAverageTime(lapTimes1), timeDifferenceRemaining);
-                displayStats();
-            }
-        }
-    }
-});
-
-// Update the event listener for Conveyor 2 in a similar manner
-document.getElementById('startConveyor2').addEventListener('click', () => {
-    const button = document.getElementById('startConveyor2');
-    if (!running2) {
-        lapStart2 = Date.now();
-        running2 = true;
-        button.textContent = "STOP CONVEYOR 2"; // Change button text to "Stop Conveyor 2"
-        startCountdown();
-        displayStats();
-    } else {
-        // Ask for confirmation before stopping Conveyor 2
-        const confirmStop = confirm("Are you sure you want to stop Conveyor 2?");
-        if (confirmStop) {
-            running2 = false;
-            button.textContent = "START CONVEYOR 2"; // Change button text back to "Start Conveyor 2"
-            // Calculate and update work to be done if needed
-            if (timeDifferenceRemaining > 0) {
-                workToBeDone2 = calculateWorkToBeDone(calculateAverageTime(lapTimes2), timeDifferenceRemaining);
-                displayStats();
-            }
-        }
-    }
-});
-
-        function sendLapDataToFirebase(conveyor, lapTime, timeOfDay) {
-            // Check if the lap time is greater than 15 minutes (900,000 milliseconds)
-            if (parseTime(lapTime) > 900) {
-                // Send lap time data to Firebase
-                database.ref(`laps/${conveyor}`).push({
-                    lapTime: lapTime,
-                    timeOfDay: timeOfDay
-                });
-            }
-        }
    // Function to update settings in Firebase
    function updateSettingsInFirebase(setting, value) {
             database.ref(`settings/${setting}`).set(value, (error) => {
@@ -1547,26 +1480,22 @@ document.getElementById('startConveyor2').addEventListener('click', () => {
                         document.getElementById('conveyor2Units').value = conveyor2Units;
                     }
                     if (settings.conveyor1AvgLaps !== undefined) {
-                        conveyor1AvgLaps = settings.conveyor1AvgLaps;
-                        document.getElementById('conveyor1AvgLaps').value = conveyor1AvgLaps;
-                    }
-                    if (settings.conveyor2AvgLaps !== undefined) {
-                        conveyor2AvgLaps = settings.conveyor2AvgLaps;
-                        document.getElementById('conveyor2AvgLaps').value = conveyor2AvgLaps;
-                    }
-                    if (settings.toggleSwitch !== undefined) {
-                        const toggleSwitchElement = document.getElementById('toggleSwitch');
-                        if (toggleSwitchElement) {
-                            toggleSwitchElement.checked = settings.toggleSwitch;
-                       
-                        }
-                    }
-                    displayStats();
-                }
-            }).catch((error) => {
-                console.error('Error fetching settings from Firebase:', error);
-            });
+                conveyor1AvgLaps = settings.conveyor1AvgLaps;
+                avgLaps1 = conveyor1AvgLaps;
+                document.getElementById('conveyor1AvgLaps').value = conveyor1AvgLaps;
+            }
+            if (settings.conveyor2AvgLaps !== undefined) {
+                conveyor2AvgLaps = settings.conveyor2AvgLaps;
+                avgLaps2 = conveyor2AvgLaps;
+                document.getElementById('conveyor2AvgLaps').value = conveyor2AvgLaps;
+            }
+            resetAvgLapsIfNeeded();
+            displayStats();
         }
+    }).catch((error) => {
+        console.error('Error fetching settings from Firebase:', error);
+    });
+}
 
         // Function to listen for real-time changes in Firebase settings
         function listenForSettingsChanges() {
@@ -1774,19 +1703,20 @@ document.getElementById('resetLaps').addEventListener('click', () => {
     }
 });
 
-// Event listeners for average laps settings
+// Modify the event listeners for average laps settings
 document.getElementById('conveyor1AvgLaps').addEventListener('change', (event) => {
     conveyor1AvgLaps = parseInt(event.target.value);
+    avgLaps1 = conveyor1AvgLaps;
+    resetAvgLapsIfNeeded();
     displayStats();
 });
 
 document.getElementById('conveyor2AvgLaps').addEventListener('change', (event) => {
     conveyor2AvgLaps = parseInt(event.target.value);
+    avgLaps2 = conveyor2AvgLaps;
+    resetAvgLapsIfNeeded();
     displayStats();
 });
-
-// Call the displayStats function if it's defined elsewhere in your code
-displayStats();
 
 // Auto pull 10 laps on page open and start conveyors
 const lapCount = 10;
