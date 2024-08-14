@@ -2065,15 +2065,17 @@ function watchForNewLaps(conveyor, lapTimesArray) {
     }, 3000); // Adjust the interval as needed (e.g., every 5 seconds)
     let heartbeatInterval;
 
-function toggleScriptRunningStatus() {
+    function toggleScriptRunningStatus() {
     const scriptRunningRef = database.ref('scriptRunning');
+    let heartbeatValue = true;
     
     // Set the initial status to true
     scriptRunningRef.set(true);
 
-    // Set up a heartbeat to update the status every 30 seconds
+    // Set up a heartbeat to toggle the status every 30 seconds
     heartbeatInterval = setInterval(() => {
-        scriptRunningRef.set(true);
+        heartbeatValue = !heartbeatValue;
+        scriptRunningRef.set(heartbeatValue);
     }, 30000);
 
     // Set up an event listener for when the page is about to unload
