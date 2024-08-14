@@ -2063,7 +2063,42 @@ function watchForNewLaps(conveyor, lapTimesArray) {
         synchronizeLaps('conveyor1', lapTimes1);
         synchronizeLaps('conveyor2', lapTimes2);
     }, 3000); // Adjust the interval as needed (e.g., every 5 seconds)
+    let heartbeatInterval;
 
+function toggleScriptRunningStatus() {
+    const scriptRunningRef = database.ref('scriptRunning');
+    
+    // Set the initial status to true
+    scriptRunningRef.set(true);
+
+    // Set up a heartbeat to update the status every 30 seconds
+    heartbeatInterval = setInterval(() => {
+        scriptRunningRef.set(true);
+    }, 30000);
+
+    // Set up an event listener for when the page is about to unload
+    window.addEventListener('beforeunload', () => {
+        clearInterval(heartbeatInterval);
+        scriptRunningRef.set(false);
+    });
+}
+
+// Call this function when the script starts running
+document.addEventListener('DOMContentLoaded', () => {
+    toggleScriptRunningStatus();
+    // ... rest of your existing DOMContentLoaded code ...
+});
+
+// Add this to your existing Firebase error handling
+database.ref('.info/connected').on('value', (snap) => {
+    if (snap.val() === true) {
+        console.log('Connected to Firebase');
+        toggleScriptRunningStatus(); // Restart the heartbeat if reconnected
+    } else {
+        console.log('Disconnected from Firebase');
+        clearInterval(heartbeatInterval); // Stop the heartbeat when disconnected
+    }
+});
 </script>
 </body>
 </html>
